@@ -301,87 +301,190 @@ def build_report_prompt(stats_json: dict) -> str:
 
 st.set_page_config(
     page_title="AB·AI — Автоматизация A/B-тестирования",
-    page_icon="🧪",
+    page_icon="⬡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 st.markdown("""
 <style>
-    /* Скрыть стандартный header Streamlit */
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
+
     #MainMenu, footer, header { visibility: hidden; }
-
-    /* Убрать верхний padding */
     .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
+    .stApp { background: #03060f !important; }
+    .stApp > div { background: #03060f !important; }
 
-    /* Метрики */
-    [data-testid="metric-container"] {
-        background: #f8f7ff;
-        border-radius: 10px;
-        padding: 12px 16px;
-        border: 1px solid #e5e2f8;
+    [data-testid="stSidebar"] {
+        background: #060d1a !important;
+        border-right: 1px solid #0d1f3c !important;
     }
-    [data-testid="metric-container"] label { font-size: 12px !important; color: #7b78a8 !important; }
-    [data-testid="metric-container"] [data-testid="metric-value"] { font-size: 24px !important; color: #2d2060 !important; }
+    [data-testid="stSidebar"] .stMarkdown h2 {
+        font-family: 'Share Tech Mono', monospace !important;
+        color: #00f0ff !important;
+        text-shadow: 0 0 10px #00f0ff88;
+        letter-spacing: .05em;
+    }
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] .stMarkdown em,
+    [data-testid="stSidebar"] .stMarkdown strong { color: #4a7090 !important; }
+    [data-testid="stSidebar"] hr { border-color: #0d1f3c !important; }
+    [data-testid="stSidebar"] .stMarkdown div[style] { color: #2a4a5a !important; }
+
+    /* Убираем кружки radio, делаем текстовую навигацию */
+    [data-testid="stSidebar"] [data-testid="stRadio"] { gap: 0 !important; }
+    [data-testid="stSidebar"] [data-testid="stRadio"] label {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 7px 8px !important;
+        font-family: 'Share Tech Mono', monospace !important;
+        font-size: 13px !important;
+        color: #4a7090 !important;
+        cursor: pointer;
+        display: block !important;
+        width: 100% !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
+        color: #00f0ff !important;
+        border-left: 2px solid #00f0ff !important;
+        padding-left: 10px !important;
+        background: rgba(0,240,255,.04) !important;
+        text-shadow: 0 0 8px #00f0ff55;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] p {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="radio"] svg { display: none !important; }
+    [data-testid="stSidebar"] [data-baseweb="radio"] [data-testid="stMarkdownContainer"] {
+        padding-left: 0 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] > label > div:first-child { display: none !important; }
+
+    /* Основной контент */
+    .main { background: #03060f !important; }
+    h1, h2, h3 {
+        font-family: 'Share Tech Mono', monospace !important;
+        color: #00f0ff !important;
+        text-shadow: 0 0 12px #00f0ff44;
+        letter-spacing: .03em;
+    }
 
     /* Кнопки */
     .stButton > button {
-        background: #534AB7;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 500;
-        padding: 0.5rem 1.5rem;
-        transition: background 0.2s;
+        background: transparent !important;
+        color: #00f0ff !important;
+        border: 1px solid #00f0ff !important;
+        border-radius: 0 !important;
+        font-family: 'Share Tech Mono', monospace !important;
+        font-size: 12px !important;
+        letter-spacing: .08em !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 0 8px #00f0ff33 !important;
     }
-    .stButton > button:hover { background: #3C3489; color: white; }
-    .stButton > button:active { background: #26215C; color: white; }
+    .stButton > button:hover {
+        background: rgba(0,240,255,.08) !important;
+        box-shadow: 0 0 16px #00f0ff88 !important;
+    }
 
-    /* Сайдбар */
-    [data-testid="stSidebar"] { background: #f4f3fd; }
-    [data-testid="stSidebar"] h1 { font-size: 20px; color: #2d2060; }
+    /* Инпуты */
+    .stTextInput input, .stNumberInput input, .stTextArea textarea {
+        background: #060d1a !important;
+        color: #c8e8ff !important;
+        border: 1px solid #0d2035 !important;
+        border-radius: 0 !important;
+        font-family: 'Share Tech Mono', monospace !important;
+        font-size: 13px !important;
+    }
+    .stTextInput input:focus { border-color: #00f0ff !important; }
+    .stTextInput label, .stNumberInput label, .stTextArea label,
+    .stSelectbox label, .stSlider label { color: #4a7090 !important; font-size: 12px !important; }
 
-    /* Вкладки */
-    .stTabs [data-baseweb="tab"] { font-size: 14px; }
-    .stTabs [aria-selected="true"] { color: #534AB7; border-bottom-color: #534AB7; }
+    /* Select */
+    [data-testid="stSelectbox"] > div { background: #060d1a !important; border: 1px solid #0d2035 !important; border-radius: 0 !important; }
+    [data-testid="stSelectbox"] > div > div { color: #c8e8ff !important; }
 
-    /* Инфо-блок */
+    /* Метрики */
+    [data-testid="metric-container"] {
+        background: #060d1a !important;
+        border: 1px solid #0d2035 !important;
+        border-left: 2px solid #00f0ff !important;
+        border-radius: 0 !important;
+        padding: 12px 14px !important;
+    }
+    [data-testid="metric-container"] label {
+        color: #4a7090 !important;
+        font-family: 'Share Tech Mono', monospace !important;
+        font-size: 10px !important;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+    [data-testid="metric-container"] [data-testid="metric-value"] {
+        color: #00f0ff !important;
+        font-family: 'Share Tech Mono', monospace !important;
+        font-size: 22px !important;
+        text-shadow: 0 0 10px #00f0ff44 !important;
+    }
+    [data-testid="metric-container"] [data-testid="metric-delta"] { color: #1D9E75 !important; }
+
+    /* Спиннер */
+    .stSpinner > div { border-top-color: #00f0ff !important; }
+
+    /* Алерты */
+    .stSuccess { background: #031209 !important; border: 1px solid #1D9E75 !important; color: #9FE1CB !important; }
+    .stError   { background: #120309 !important; border: 1px solid #ff3cac !important; color: #ff3cac !important; }
+    .stInfo    { background: #03060f !important; border: 1px solid #0d2035 !important; }
+    .stWarning { background: #120c03 !important; }
+
+    /* Кастомные блоки */
     .info-box {
-        background: #eeedfe;
-        border-left: 3px solid #534AB7;
-        border-radius: 0 8px 8px 0;
+        background: rgba(0,240,255,.04);
+        border-left: 2px solid #00f0ff;
         padding: 10px 14px;
-        font-size: 13px;
-        color: #3C3489;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 12px;
+        color: #7ad4e8;
         margin: 8px 0;
+        letter-spacing: .02em;
     }
-
-    /* Гипотеза-карточка */
     .hypo-card {
-        background: white;
-        border: 1px solid #e5e2f8;
-        border-radius: 10px;
+        background: #060d1a;
+        border: 1px solid #0d2035;
+        border-top: 2px solid #00f0ff;
         padding: 14px 16px;
         margin-bottom: 10px;
     }
-    .hypo-title { font-weight: 600; font-size: 14px; color: #2d2060; margin-bottom: 4px; }
-    .hypo-change { font-size: 13px; color: #444; margin-bottom: 4px; }
-    .hypo-meta { font-size: 12px; color: #888; }
-    .badge-high { background: #E1F5EE; color: #085041; padding: 1px 8px; border-radius: 20px; font-size: 11px; }
-    .badge-mid  { background: #FAEEDA; color: #633806; padding: 1px 8px; border-radius: 20px; font-size: 11px; }
-    .badge-low  { background: #f0f0f0; color: #555; padding: 1px 8px; border-radius: 20px; font-size: 11px; }
-
-    /* LLM-резюме */
+    .hypo-title {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 12px;
+        color: #00f0ff;
+        margin-bottom: 6px;
+        letter-spacing: .04em;
+    }
+    .hypo-change { font-size: 14px; color: #c8e8ff; margin-bottom: 4px; font-family: 'Rajdhani', sans-serif; font-weight: 500; }
+    .hypo-meta   { font-size: 12px; color: #4a7090; font-family: 'Rajdhani', sans-serif; }
+    .badge-high { background: rgba(0,240,255,.08); color: #00f0ff; padding: 2px 8px; border: 1px solid rgba(0,240,255,.25); font-size: 10px; font-family: 'Share Tech Mono', monospace; }
+    .badge-mid  { background: rgba(255,60,172,.07); color: #ff3cac; padding: 2px 8px; border: 1px solid rgba(255,60,172,.25); font-size: 10px; font-family: 'Share Tech Mono', monospace; }
+    .badge-low  { background: rgba(255,255,255,.04); color: #4a7090; padding: 2px 8px; border: 1px solid #0d2035; font-size: 10px; font-family: 'Share Tech Mono', monospace; }
     .llm-summary {
-        background: #f8f7ff;
-        border-left: 3px solid #534AB7;
-        border-radius: 0 8px 8px 0;
+        background: #060d1a;
+        border-left: 2px solid #00f0ff;
         padding: 14px 18px;
-        font-size: 14px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
         line-height: 1.7;
-        color: #2d2060;
+        color: #c8e8ff;
         margin-top: 8px;
     }
+
+    hr { border-color: #0d1f3c !important; }
+    .stDivider { border-color: #0d1f3c !important; }
+
+    /* Matplotlib графики */
+    .stImage img { border: 1px solid #0d2035; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -391,14 +494,14 @@ st.markdown("""
 # ============================================================
 
 with st.sidebar:
-    st.markdown("## 🧪 AB·AI")
-    st.markdown("*Автоматизация A/B-тестирования*")
+    st.markdown("## AB·AI")
+    st.markdown("*// автоматизация a/b*")
     st.divider()
 
     page = st.radio(
-        "Раздел",
-        options=["Гипотезы", "Планирование", "Симуляция", "Отчёт", "Настройки"],
-        label_visibility="collapsed",
+        "// навигация",
+        options=["Гипотезы", "Планирование", "Симуляция", "Отчёт"],
+        label_visibility="visible",
     )
 
     st.divider()
@@ -787,61 +890,3 @@ elif page == "Отчёт":
 # ============================================================
 # СТРАНИЦА 5: НАСТРОЙКИ
 # ============================================================
-
-elif page == "Настройки":
-    st.markdown("### Настройки API — YandexGPT")
-    st.markdown(
-        "<div class='info-box'>"
-        "Провайдер: <b>YandexGPT</b> (yandexgpt/latest)<br>"
-        "На Streamlit Cloud ключи хранятся в Secrets — вводить здесь не нужно."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("#### Локальный запуск")
-    st.markdown("Если запускаешь приложение локально — введи ключи здесь:")
-    col1, col2 = st.columns(2)
-    with col1:
-        folder_id = st.text_input(
-            "Folder ID",
-            value=st.session_state.get("yandex_folder_id", ""),
-            placeholder="b1g...",
-        )
-    with col2:
-        yandex_key = st.text_input(
-            "API Key",
-            value=st.session_state.get("yandex_api_key", ""),
-            type="password",
-            placeholder="AQVN...",
-        )
-    if st.button("Сохранить"):
-        st.session_state["yandex_folder_id"] = folder_id
-        st.session_state["yandex_api_key"] = yandex_key
-        st.success("Сохранено.")
-
-    st.markdown(
-        "<div class='info-box'>"
-        "Получить ключи: console.yandex.cloud → Сервисные аккаунты → API-ключ.<br>"
-        "Folder ID: левый верхний угол консоли Yandex Cloud."
-        "</div>",
-        unsafe_allow_html=True,
-    )
-
-    st.divider()
-    st.markdown("#### Проверка соединения")
-    if st.button("Тест подключения"):
-        with st.spinner("Отправляю тестовый запрос..."):
-            test_result = call_llm("Ответь одним словом: работает?")
-        if test_result.startswith("["):
-            st.error(test_result)
-        else:
-            st.success(f"YandexGPT отвечает: «{test_result.strip()[:80]}»")
-
-    st.divider()
-    st.markdown(
-        "<div style='font-size:12px; color:#999;'>"
-        "Стоимость: YandexGPT Lite — 0.20 ₽ / 1 000 токенов.<br>"
-        "Один запрос в приложении ≈ 800 токенов ≈ 0.16 ₽."
-        "</div>",
-        unsafe_allow_html=True,
-    )
