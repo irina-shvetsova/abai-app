@@ -224,36 +224,18 @@ def _call_yandex(folder_id: str, api_key: str, prompt: str, system: str = "") ->
 
 
 def call_llm(prompt: str, system: str = "") -> str:
-    """Единая точка входа для LLM: выбирает провайдера из st.session_state.
-    
-    Ключи ищутся в следующем порядке:
-      1. st.secrets — Streamlit Cloud (продакшн, безопасно)
-      2. st.session_state — ручной ввод в UI (локальный запуск)
-    """
-    provider = st.session_state.get("llm_provider", "anthropic")
-
-    if provider == "anthropic":
-        # Streamlit Cloud: секрет ANTHROPIC_API_KEY → локально: поле в настройках
-        api_key = (
-            st.secrets.get("ANTHROPIC_API_KEY", "")
-            or st.session_state.get("anthropic_key", "")
-        )
-        if not api_key:
-            return "[Не указан Anthropic API ключ — добавь ANTHROPIC_API_KEY в Secrets или перейди в Настройки]"
-        return _call_anthropic(api_key, prompt, system)
-    else:
-        # Streamlit Cloud: YANDEX_FOLDER_ID + YANDEX_API_KEY → локально: поля в настройках
-        folder_id = (
-            st.secrets.get("YANDEX_FOLDER_ID", "")
-            or st.session_state.get("yandex_folder_id", "")
-        )
-        api_key = (
-            st.secrets.get("YANDEX_API_KEY", "")
-            or st.session_state.get("yandex_api_key", "")
-        )
-        if not folder_id or not api_key:
-            return "[Не указаны Yandex Folder ID или API ключ — добавь в Secrets или перейди в Настройки]"
-        return _call_yandex(folder_id, api_key, prompt, system)
+    """Вызов YandexGPT. Ключи: st.secrets (продакшн) → st.session_state (локально)."""
+    folder_id = (
+        st.secrets.get("YANDEX_FOLDER_ID", "")
+        or st.session_state.get("yandex_folder_id", "")
+    )
+    api_key = (
+        st.secrets.get("YANDEX_API_KEY", "")
+        or st.session_state.get("yandex_api_key", "")
+    )
+    if not folder_id or not api_key:
+        return "[Не указаны YANDEX_FOLDER_ID или YANDEX_API_KEY — перейди в раздел Настройки]"
+    return _call_yandex(folder_id, api_key, prompt, system)
 
 
 # ============================================================
@@ -415,7 +397,7 @@ with st.sidebar:
 
     page = st.radio(
         "Раздел",
-        options=["💡 Гипотезы", "📐 Планирование", "📈 Симуляция (Thompson)", "📄 Отчёт", "⚙️ Настройки"],
+        options=["Гипотезы", "Планирование", "Симуляция", "Отчёт", "Настройки"],
         label_visibility="collapsed",
     )
 
@@ -431,7 +413,7 @@ with st.sidebar:
 # СТРАНИЦА 1: ГЕНЕРАЦИЯ ГИПОТЕЗ
 # ============================================================
 
-if page == "💡 Гипотезы":
+if page == "Гипотезы":
     st.markdown("### 💡 Генерация продуктовых гипотез")
     st.markdown(
         "<div class='info-box'>LLM анализирует контекст продукта и историю тестов, "
@@ -530,7 +512,7 @@ if page == "💡 Гипотезы":
 # СТРАНИЦА 2: ПЛАНИРОВАНИЕ ТЕСТА
 # ============================================================
 
-elif page == "📐 Планирование":
+elif page == "Планирование":
     st.markdown("### 📐 Статистическое планирование теста")
     st.markdown(
         "<div class='info-box'>Рассчитывается минимально необходимая выборка по формуле "
@@ -599,7 +581,7 @@ elif page == "📐 Планирование":
 # СТРАНИЦА 3: СИМУЛЯЦИЯ THOMPSON SAMPLING
 # ============================================================
 
-elif page == "📈 Симуляция (Thompson)":
+elif page == "Симуляция":
     st.markdown("### 📈 Адаптивное тестирование: Thompson Sampling")
     st.markdown(
         "<div class='info-box'>Симуляция Multi-Armed Bandit: каждый вариант моделируется "
@@ -707,7 +689,7 @@ elif page == "📈 Симуляция (Thompson)":
 # СТРАНИЦА 4: ОТЧЁТ
 # ============================================================
 
-elif page == "📄 Отчёт":
+elif page == "Отчёт":
     st.markdown("### 📄 Анализ результатов и бизнес-отчёт")
     st.markdown(
         "<div class='info-box'>Введи сырые результаты теста — система посчитает статистику "
@@ -806,68 +788,60 @@ elif page == "📄 Отчёт":
 # СТРАНИЦА 5: НАСТРОЙКИ
 # ============================================================
 
-elif page == "⚙️ Настройки":
-    st.markdown("### ⚙️ Настройки API")
-
-    provider = st.radio(
-        "Провайдер LLM",
-        options=["anthropic", "yandex"],
-        format_func=lambda x: "Claude (Anthropic)" if x == "anthropic" else "YandexGPT",
-        horizontal=True,
+elif page == "Настройки":
+    st.markdown("### Настройки API — YandexGPT")
+    st.markdown(
+        "<div class='info-box'>"
+        "Провайдер: <b>YandexGPT</b> (yandexgpt/latest)<br>"
+        "На Streamlit Cloud ключи хранятся в Secrets — вводить здесь не нужно."
+        "</div>",
+        unsafe_allow_html=True,
     )
-    st.session_state["llm_provider"] = provider
 
-    if provider == "anthropic":
-        st.markdown("**Anthropic API**")
-        key = st.text_input(
-            "API Key (sk-ant-...)",
-            value=st.session_state.get("anthropic_key", ""),
+    st.markdown("#### Локальный запуск")
+    st.markdown("Если запускаешь приложение локально — введи ключи здесь:")
+    col1, col2 = st.columns(2)
+    with col1:
+        folder_id = st.text_input(
+            "Folder ID",
+            value=st.session_state.get("yandex_folder_id", ""),
+            placeholder="b1g...",
+        )
+    with col2:
+        yandex_key = st.text_input(
+            "API Key",
+            value=st.session_state.get("yandex_api_key", ""),
             type="password",
+            placeholder="AQVN...",
         )
-        if st.button("💾 Сохранить"):
-            st.session_state["anthropic_key"] = key
-            st.success("Ключ сохранён в session state (не покидает браузер).")
-        st.markdown(
-            "<div class='info-box'>Получить ключ: console.anthropic.com → API Keys.<br>"
-            "Модель: claude-sonnet-4-20250514</div>",
-            unsafe_allow_html=True,
-        )
+    if st.button("Сохранить"):
+        st.session_state["yandex_folder_id"] = folder_id
+        st.session_state["yandex_api_key"] = yandex_key
+        st.success("Сохранено.")
 
-    else:
-        st.markdown("**YandexGPT (Yandex Cloud)**")
-        col1, col2 = st.columns(2)
-        with col1:
-            folder_id = st.text_input(
-                "Folder ID",
-                value=st.session_state.get("yandex_folder_id", ""),
-            )
-        with col2:
-            yandex_key = st.text_input(
-                "API Key",
-                value=st.session_state.get("yandex_api_key", ""),
-                type="password",
-            )
-        if st.button("💾 Сохранить"):
-            st.session_state["yandex_folder_id"] = folder_id
-            st.session_state["yandex_api_key"] = yandex_key
-            st.success("Данные сохранены.")
-        st.markdown(
-            "<div class='info-box'>"
-            "1. Зарегистрируйся на cloud.yandex.ru<br>"
-            "2. Создай сервисный аккаунт с ролью <code>ai.languageModels.user</code><br>"
-            "3. Создай API-ключ в разделе «Сервисные аккаунты»<br>"
-            "4. Скопируй Folder ID из консоли (левый верхний угол)<br>"
-            "Модель: yandexgpt/latest (YandexGPT 5)"
-            "</div>",
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        "<div class='info-box'>"
+        "Получить ключи: console.yandex.cloud → Сервисные аккаунты → API-ключ.<br>"
+        "Folder ID: левый верхний угол консоли Yandex Cloud."
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     st.divider()
-    st.markdown("**Проверка соединения**")
-    if st.button("🔌 Тест подключения"):
+    st.markdown("#### Проверка соединения")
+    if st.button("Тест подключения"):
         with st.spinner("Отправляю тестовый запрос..."):
             test_result = call_llm("Ответь одним словом: работает?")
-        if test_result.startswith("[Ошибка") or test_result.startswith("[Не указан"):
+        if test_result.startswith("["):
             st.error(test_result)
         else:
-            st.success(f"✅ LLM отвечает: «{test_result.strip()[:80]}»")
+            st.success(f"YandexGPT отвечает: «{test_result.strip()[:80]}»")
+
+    st.divider()
+    st.markdown(
+        "<div style='font-size:12px; color:#999;'>"
+        "Стоимость: YandexGPT Lite — 0.20 ₽ / 1 000 токенов.<br>"
+        "Один запрос в приложении ≈ 800 токенов ≈ 0.16 ₽."
+        "</div>",
+        unsafe_allow_html=True,
+    )
