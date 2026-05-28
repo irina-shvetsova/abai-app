@@ -304,6 +304,7 @@ st.set_page_config(
     page_icon="⬡",
     layout="wide",
     initial_sidebar_state="expanded",
+    menu_items={}
 )
 
 st.markdown("""
@@ -485,7 +486,28 @@ st.markdown("""
 
     /* Matplotlib графики */
     .stImage img { border: 1px solid #0d2035; }
+
+    /* Кнопка открытия сайдбара */
+    [data-testid="collapsedControl"] {
+        background: #060d1a !important;
+        border-right: 1px solid #00f0ff !important;
+        color: #00f0ff !important;
+    }
+    [data-testid="collapsedControl"] svg { fill: #00f0ff !important; }
 </style>
+""", unsafe_allow_html=True)
+
+# Принудительно открываем сайдбар через JS
+st.markdown("""
+<script>
+    // Открываем сайдбар если он закрыт
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const btn = window.parent.document.querySelector('[data-testid="collapsedControl"]');
+            if (btn) btn.click();
+        }, 500);
+    });
+</script>
 """, unsafe_allow_html=True)
 
 
