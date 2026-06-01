@@ -300,200 +300,211 @@ def build_report_prompt(stats_json: dict) -> str:
 # ============================================================
 
 st.set_page_config(
-    page_title="AB·AI — Автоматизация A/B-тестирования",
-    page_icon="⬡",
+    page_title="AB·AI — A/B-тестирование с ИИ",
+    page_icon="◆",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={}
 )
 
+# Акцентный цвет: индиго #4F46E5 (один на всё приложение)
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
+    /* ── ГЛОБАЛЬНЫЕ СБРОСЫ ── */
     #MainMenu, footer, header { visibility: hidden; }
-    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
-    .stApp { background: #03060f !important; }
-    .stApp > div { background: #03060f !important; }
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
+    .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1100px; }
 
+    /* ── ФОНЫ ── */
+    .stApp, .stApp > div, .main { background: #ffffff !important; }
+
+    /* ── САЙДБАР ── */
     [data-testid="stSidebar"] {
-        background: #060d1a !important;
-        border-right: 1px solid #0d1f3c !important;
+        background: #f9f9fb !important;
+        border-right: 1px solid #e5e5ea !important;
     }
     [data-testid="stSidebar"] .stMarkdown h2 {
-        font-family: 'Share Tech Mono', monospace !important;
-        color: #00f0ff !important;
-        text-shadow: 0 0 10px #00f0ff88;
-        letter-spacing: .05em;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #1c1c1e !important;
+        letter-spacing: -0.01em !important;
     }
     [data-testid="stSidebar"] .stMarkdown p,
-    [data-testid="stSidebar"] .stMarkdown em,
-    [data-testid="stSidebar"] .stMarkdown strong { color: #4a7090 !important; }
-    [data-testid="stSidebar"] hr { border-color: #0d1f3c !important; }
-    [data-testid="stSidebar"] .stMarkdown div[style] { color: #2a4a5a !important; }
+    [data-testid="stSidebar"] .stMarkdown em { color: #8e8e93 !important; font-size: 12px !important; }
+    [data-testid="stSidebar"] hr { border-color: #e5e5ea !important; }
 
-    /* Убираем кружки radio, делаем текстовую навигацию */
-    [data-testid="stSidebar"] [data-testid="stRadio"] { gap: 0 !important; }
+    /* Radio — минималистичная навигация */
     [data-testid="stSidebar"] [data-testid="stRadio"] label {
         background: transparent !important;
         border: none !important;
-        border-radius: 0 !important;
-        padding: 7px 8px !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 13px !important;
-        color: #4a7090 !important;
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+        font-weight: 400 !important;
+        color: #3a3a3c !important;
         cursor: pointer;
         display: block !important;
         width: 100% !important;
+        margin-bottom: 2px !important;
+        transition: background .15s !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+        background: #ededf0 !important;
     }
     [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {
-        color: #00f0ff !important;
-        border-left: 2px solid #00f0ff !important;
-        padding-left: 10px !important;
-        background: rgba(0,240,255,.04) !important;
-        text-shadow: 0 0 8px #00f0ff55;
+        background: #eef0fd !important;
+        color: #4F46E5 !important;
+        font-weight: 500 !important;
     }
-    [data-testid="stSidebar"] [data-testid="stRadio"] p {
-        color: inherit !important;
-        font-family: inherit !important;
-        font-size: inherit !important;
-    }
+    [data-testid="stSidebar"] [data-testid="stRadio"] p { color: inherit !important; font-size: inherit !important; }
     [data-testid="stSidebar"] [data-baseweb="radio"] svg { display: none !important; }
-    [data-testid="stSidebar"] [data-baseweb="radio"] [data-testid="stMarkdownContainer"] {
-        padding-left: 0 !important;
-    }
     [data-testid="stSidebar"] [data-testid="stRadio"] > label > div:first-child { display: none !important; }
 
-    /* Основной контент */
-    .main { background: #03060f !important; }
-    h1, h2, h3 {
-        font-family: 'Share Tech Mono', monospace !important;
-        color: #00f0ff !important;
-        text-shadow: 0 0 12px #00f0ff44;
-        letter-spacing: .03em;
-    }
+    /* ── ТИПОГРАФИКА ── */
+    h1 { font-size: 22px !important; font-weight: 600 !important; color: #1c1c1e !important; letter-spacing: -0.02em !important; margin-bottom: 4px !important; }
+    h2 { font-size: 17px !important; font-weight: 600 !important; color: #1c1c1e !important; letter-spacing: -0.01em !important; }
+    h3 { font-size: 14px !important; font-weight: 500 !important; color: #3a3a3c !important; }
+    p, label, .stMarkdown { color: #3a3a3c !important; font-size: 14px !important; }
 
-    /* Кнопки */
+    /* ── КНОПКИ ── */
     .stButton > button {
-        background: transparent !important;
-        color: #00f0ff !important;
-        border: 1px solid #00f0ff !important;
-        border-radius: 0 !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 12px !important;
-        letter-spacing: .08em !important;
-        text-transform: uppercase !important;
-        box-shadow: 0 0 8px #00f0ff33 !important;
+        background: #4F46E5 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        padding: 0.55rem 1.4rem !important;
+        box-shadow: 0 1px 3px rgba(79,70,229,.25) !important;
+        transition: all .15s !important;
     }
     .stButton > button:hover {
-        background: rgba(0,240,255,.08) !important;
-        box-shadow: 0 0 16px #00f0ff88 !important;
+        background: #4338CA !important;
+        box-shadow: 0 2px 8px rgba(79,70,229,.35) !important;
+        transform: translateY(-1px) !important;
     }
+    .stButton > button:active { transform: translateY(0) !important; }
 
-    /* Инпуты */
+    /* ── ИНПУТЫ ── */
     .stTextInput input, .stNumberInput input, .stTextArea textarea {
-        background: #060d1a !important;
-        color: #c8e8ff !important;
-        border: 1px solid #0d2035 !important;
-        border-radius: 0 !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 13px !important;
+        background: #ffffff !important;
+        color: #1c1c1e !important;
+        border: 1px solid #d1d1d6 !important;
+        border-radius: 8px !important;
+        font-size: 14px !important;
+        padding: 8px 12px !important;
     }
-    .stTextInput input:focus { border-color: #00f0ff !important; }
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #4F46E5 !important;
+        box-shadow: 0 0 0 3px rgba(79,70,229,.12) !important;
+        outline: none !important;
+    }
     .stTextInput label, .stNumberInput label, .stTextArea label,
-    .stSelectbox label, .stSlider label { color: #4a7090 !important; font-size: 12px !important; }
+    .stSelectbox label, .stSlider label {
+        color: #3a3a3c !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
 
-    /* Select */
-    [data-testid="stSelectbox"] > div { background: #060d1a !important; border: 1px solid #0d2035 !important; border-radius: 0 !important; }
-    [data-testid="stSelectbox"] > div > div { color: #c8e8ff !important; }
+    /* ── SELECTBOX ── */
+    [data-testid="stSelectbox"] > div {
+        background: #ffffff !important;
+        border: 1px solid #d1d1d6 !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stSelectbox"] > div > div { color: #1c1c1e !important; }
 
-    /* Метрики */
+    /* ── СЛАЙДЕРЫ ── */
+    [data-baseweb="slider"] [role="slider"] { background: #4F46E5 !important; }
+
+    /* ── МЕТРИКИ ── */
     [data-testid="metric-container"] {
-        background: #060d1a !important;
-        border: 1px solid #0d2035 !important;
-        border-left: 2px solid #00f0ff !important;
-        border-radius: 0 !important;
-        padding: 12px 14px !important;
+        background: #f9f9fb !important;
+        border: 1px solid #e5e5ea !important;
+        border-radius: 12px !important;
+        padding: 14px 16px !important;
+        box-shadow: none !important;
     }
     [data-testid="metric-container"] label {
-        color: #4a7090 !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 10px !important;
-        letter-spacing: .06em;
-        text-transform: uppercase;
+        color: #8e8e93 !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
     }
     [data-testid="metric-container"] [data-testid="metric-value"] {
-        color: #00f0ff !important;
-        font-family: 'Share Tech Mono', monospace !important;
-        font-size: 22px !important;
-        text-shadow: 0 0 10px #00f0ff44 !important;
+        color: #1c1c1e !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        letter-spacing: -0.02em !important;
     }
-    [data-testid="metric-container"] [data-testid="metric-delta"] { color: #1D9E75 !important; }
+    [data-testid="metric-container"] [data-testid="metric-delta"] { color: #34C759 !important; font-size: 12px !important; }
 
-    /* Спиннер */
-    .stSpinner > div { border-top-color: #00f0ff !important; }
+    /* ── СПИННЕР ── */
+    .stSpinner > div { border-top-color: #4F46E5 !important; }
 
-    /* Алерты */
-    .stSuccess { background: #031209 !important; border: 1px solid #1D9E75 !important; color: #9FE1CB !important; }
-    .stError   { background: #120309 !important; border: 1px solid #ff3cac !important; color: #ff3cac !important; }
-    .stInfo    { background: #03060f !important; border: 1px solid #0d2035 !important; }
-    .stWarning { background: #120c03 !important; }
+    /* ── АЛЕРТЫ ── */
+    .stSuccess { background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; color: #166534 !important; border-radius: 10px !important; }
+    .stError   { background: #fff1f2 !important; border: 1px solid #fecdd3 !important; color: #9f1239 !important; border-radius: 10px !important; }
+    .stInfo    { background: #eef0fd !important; border: 1px solid #c7d2fe !important; color: #3730a3 !important; border-radius: 10px !important; }
+    .stWarning { background: #fffbeb !important; border: 1px solid #fde68a !important; color: #92400e !important; border-radius: 10px !important; }
 
-    /* Кастомные блоки */
+    /* ── КАСТОМНЫЕ КОМПОНЕНТЫ ── */
     .info-box {
-        background: rgba(0,240,255,.04);
-        border-left: 2px solid #00f0ff;
+        background: #eef0fd;
+        border-left: 3px solid #4F46E5;
+        border-radius: 0 8px 8px 0;
         padding: 10px 14px;
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 12px;
-        color: #7ad4e8;
+        font-size: 13px;
+        color: #3730a3;
         margin: 8px 0;
-        letter-spacing: .02em;
+        line-height: 1.5;
     }
     .hypo-card {
-        background: #060d1a;
-        border: 1px solid #0d2035;
-        border-top: 2px solid #00f0ff;
-        padding: 14px 16px;
+        background: #ffffff;
+        border: 1px solid #e5e5ea;
+        border-radius: 12px;
+        padding: 16px 18px;
         margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06);
+        transition: box-shadow .15s;
     }
+    .hypo-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
     .hypo-title {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 12px;
-        color: #00f0ff;
+        font-size: 14px;
+        font-weight: 600;
+        color: #1c1c1e;
         margin-bottom: 6px;
-        letter-spacing: .04em;
     }
-    .hypo-change { font-size: 14px; color: #c8e8ff; margin-bottom: 4px; font-family: 'Rajdhani', sans-serif; font-weight: 500; }
-    .hypo-meta   { font-size: 12px; color: #4a7090; font-family: 'Rajdhani', sans-serif; }
-    .badge-high { background: rgba(0,240,255,.08); color: #00f0ff; padding: 2px 8px; border: 1px solid rgba(0,240,255,.25); font-size: 10px; font-family: 'Share Tech Mono', monospace; }
-    .badge-mid  { background: rgba(255,60,172,.07); color: #ff3cac; padding: 2px 8px; border: 1px solid rgba(255,60,172,.25); font-size: 10px; font-family: 'Share Tech Mono', monospace; }
-    .badge-low  { background: rgba(255,255,255,.04); color: #4a7090; padding: 2px 8px; border: 1px solid #0d2035; font-size: 10px; font-family: 'Share Tech Mono', monospace; }
+    .hypo-change { font-size: 13px; color: #3a3a3c; margin-bottom: 4px; line-height: 1.5; }
+    .hypo-meta   { font-size: 12px; color: #8e8e93; margin-top: 4px; }
+    .badge-high { background: #eef0fd; color: #4F46E5; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+    .badge-mid  { background: #fff7ed; color: #c2410c; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+    .badge-low  { background: #f4f4f5; color: #71717a; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 500; }
     .llm-summary {
-        background: #060d1a;
-        border-left: 2px solid #00f0ff;
+        background: #f9f9fb;
+        border-left: 3px solid #4F46E5;
+        border-radius: 0 10px 10px 0;
         padding: 14px 18px;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 15px;
-        font-weight: 500;
+        font-size: 14px;
         line-height: 1.7;
-        color: #c8e8ff;
+        color: #3a3a3c;
         margin-top: 8px;
     }
 
-    hr { border-color: #0d1f3c !important; }
-    .stDivider { border-color: #0d1f3c !important; }
+    /* ── РАЗДЕЛИТЕЛИ ── */
+    hr, .stDivider { border-color: #e5e5ea !important; }
 
-    /* Matplotlib графики */
-    .stImage img { border: 1px solid #0d2035; }
+    /* ── ГРАФИКИ matplotlib — светлый фон ── */
+    .stImage img { border-radius: 10px; border: 1px solid #e5e5ea; }
 
-    /* Кнопка открытия сайдбара */
+    /* ── КОЛЛАПС САЙДБАРА ── */
     [data-testid="collapsedControl"] {
-        background: #060d1a !important;
-        border-right: 1px solid #00f0ff !important;
-        color: #00f0ff !important;
+        background: #f9f9fb !important;
+        border-right: 1px solid #e5e5ea !important;
     }
-    [data-testid="collapsedControl"] svg { fill: #00f0ff !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -517,7 +528,7 @@ st.markdown("""
 
 with st.sidebar:
     st.markdown("## AB·AI")
-    st.markdown("*// автоматизация a/b*")
+    st.markdown("*Автоматизация A/B-тестов*")
     st.divider()
 
     page = st.radio(
@@ -539,7 +550,7 @@ with st.sidebar:
 # ============================================================
 
 if page == "Гипотезы":
-    st.markdown("### 💡 Генерация продуктовых гипотез")
+    st.markdown("### Генерация гипотез")
     st.markdown(
         "<div class='info-box'>LLM анализирует контекст продукта и историю тестов, "
         "формулирует конкретные, тестируемые гипотезы с оценкой уверенности.</div>",
@@ -638,7 +649,7 @@ if page == "Гипотезы":
 # ============================================================
 
 elif page == "Планирование":
-    st.markdown("### 📐 Статистическое планирование теста")
+    st.markdown("### Планирование теста")
     st.markdown(
         "<div class='info-box'>Рассчитывается минимально необходимая выборка по формуле "
         "нормального приближения к биномиальному распределению. Ошибка I рода (α) и мощность (1−β) "
@@ -707,7 +718,7 @@ elif page == "Планирование":
 # ============================================================
 
 elif page == "Симуляция":
-    st.markdown("### 📈 Адаптивное тестирование: Thompson Sampling")
+    st.markdown("### Адаптивное тестирование")
     st.markdown(
         "<div class='info-box'>Симуляция Multi-Armed Bandit: каждый вариант моделируется "
         "Beta(α, β)-распределением. Трафик автоматически перераспределяется в пользу "
@@ -760,45 +771,50 @@ elif page == "Симуляция":
                 traffic = result["traffic_shares"]
                 traffic_b = [t[1] for t in traffic]
 
-                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.5))
+                def _style_ax(a):
+                    a.set_facecolor("#ffffff")
+                    a.spines["top"].set_visible(False)
+                    a.spines["right"].set_visible(False)
+                    a.spines["left"].set_color("#e5e5ea")
+                    a.spines["bottom"].set_color("#e5e5ea")
+                    a.tick_params(colors="#8e8e93")
+                    a.grid(True, alpha=0.4, color="#e5e5ea")
 
-                # Regret curve
-                ax1.plot(steps, ts_r, color="#534AB7", linewidth=2, label="Thompson Sampling")
-                ax1.plot(steps, cl_r, color="#D85A30", linewidth=1.5, linestyle="--", label="Классический A/B")
-                ax1.set_title("Cumulative regret", fontsize=12)
-                ax1.set_xlabel("Посетители")
-                ax1.set_ylabel("Regret")
-                ax1.legend(fontsize=9)
-                ax1.grid(True, alpha=0.2)
+                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 3.5), facecolor="#ffffff")
+                _style_ax(ax1); _style_ax(ax2)
 
-                # Traffic share
-                ax2.plot(steps, [t * 100 for t in traffic_b], color="#534AB7", linewidth=2, label="Вариант B")
-                ax2.plot(steps, [(1 - t) * 100 for t in traffic_b], color="#9FE1CB", linewidth=2, label="Вариант A")
-                ax2.axhline(50, color="#ccc", linestyle="--", linewidth=1)
-                ax2.set_title("Доля трафика (%)", fontsize=12)
-                ax2.set_xlabel("Посетители")
-                ax2.set_ylabel("%")
-                ax2.legend(fontsize=9)
-                ax2.grid(True, alpha=0.2)
+                ax1.plot(steps, ts_r, color="#4F46E5", linewidth=2, label="Thompson Sampling")
+                ax1.plot(steps, cl_r, color="#EF4444", linewidth=1.5, linestyle="--", label="Классический A/B")
+                ax1.set_title("Cumulative regret", fontsize=12, color="#1c1c1e", fontweight="600")
+                ax1.set_xlabel("Посетители", color="#8e8e93")
+                ax1.set_ylabel("Regret", color="#8e8e93")
+                ax1.legend(fontsize=9, framealpha=0)
+
+                ax2.plot(steps, [t * 100 for t in traffic_b], color="#4F46E5", linewidth=2, label="Вариант B")
+                ax2.plot(steps, [(1 - t) * 100 for t in traffic_b], color="#34C759", linewidth=2, label="Вариант A")
+                ax2.axhline(50, color="#d1d1d6", linestyle="--", linewidth=1)
+                ax2.set_title("Доля трафика (%)", fontsize=12, color="#1c1c1e", fontweight="600")
+                ax2.set_xlabel("Посетители", color="#8e8e93")
+                ax2.set_ylabel("%", color="#8e8e93")
+                ax2.legend(fontsize=9, framealpha=0)
 
                 fig.tight_layout()
                 st.pyplot(fig)
                 plt.close(fig)
 
-                # Beta distributions
                 st.markdown("**Posterior Beta-распределения (финал)**")
-                fig2, ax3 = plt.subplots(figsize=(9, 2.8))
+                fig2, ax3 = plt.subplots(figsize=(9, 2.8), facecolor="#ffffff")
+                _style_ax(ax3)
                 x = np.linspace(0, 0.12, 500)
-                colors = ["#9FE1CB", "#534AB7"]
+                colors_plot = ["#34C759", "#4F46E5"]
                 labels_plot = ["Вариант A", "Вариант B"]
                 for arm_idx, arm in enumerate(result["final_arms"]):
                     y = stats.beta.pdf(x, arm.success_count, arm.failure_count)
-                    ax3.plot(x, y, color=colors[arm_idx], linewidth=2, label=f"{labels_plot[arm_idx]} (mean={arm.posterior_mean:.3%})")
-                    ax3.fill_between(x, y, alpha=0.15, color=colors[arm_idx])
-                ax3.set_xlabel("Конверсия θ")
-                ax3.set_ylabel("Плотность")
-                ax3.legend(fontsize=10)
-                ax3.grid(True, alpha=0.2)
+                    ax3.plot(x, y, color=colors_plot[arm_idx], linewidth=2, label=f"{labels_plot[arm_idx]} (mean={arm.posterior_mean:.3%})")
+                    ax3.fill_between(x, y, alpha=0.12, color=colors_plot[arm_idx])
+                ax3.set_xlabel("Конверсия θ", color="#8e8e93")
+                ax3.set_ylabel("Плотность", color="#8e8e93")
+                ax3.legend(fontsize=10, framealpha=0)
                 fig2.tight_layout()
                 st.pyplot(fig2)
                 plt.close(fig2)
@@ -815,7 +831,7 @@ elif page == "Симуляция":
 # ============================================================
 
 elif page == "Отчёт":
-    st.markdown("### 📄 Анализ результатов и бизнес-отчёт")
+    st.markdown("### Анализ результатов")
     st.markdown(
         "<div class='info-box'>Введи сырые результаты теста — система посчитает статистику "
         "и сгенерирует бизнес-резюме через LLM.</div>",
