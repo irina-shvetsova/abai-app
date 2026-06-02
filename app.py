@@ -172,36 +172,19 @@ p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
 [data-testid="stSidebar"] .stButton>button{background:#27272A !important;color:#E4E4E7 !important;border:1px solid #3F3F46 !important;box-shadow:none !important;font-size:12px !important;padding:0.45rem 1rem !important}
 [data-testid="stSidebar"] .stButton>button:hover{background:#3730A3 !important;color:#fff !important;border-color:#4F46E5 !important;transform:none !important;box-shadow:none !important}
 
-/* ── ЧИСЛОВОЕ ПОЛЕ: единый блок [поле][−][+] ──
-   Скругление и рамку снимаем со ВСЕХ внутренних слоёв (не зная точного testid обёртки),
-   внешний контур и левое скругление держим на контейнере, правый угол — на кнопке '+'. */
-/* 1. Контейнер — внешняя рамка + скругление слева, плотная упаковка без зазоров */
-[data-testid="stNumberInput"]{
-    border:1px solid #E5E7EB !important;border-radius:8px !important;overflow:hidden !important;
-    display:flex !important;align-items:stretch !important;background:#fff !important}
-[data-testid="stNumberInput"]>div{display:flex !important;align-items:stretch !important;gap:0 !important;width:100% !important}
-/* 2. Все вложенные слои внутри — без собственной рамки и без скругления */
-[data-testid="stNumberInput"] *{border-radius:0 !important}
-[data-testid="stNumberInput"] [data-baseweb],
-[data-testid="stNumberInput"] input{border:none !important;box-shadow:none !important}
-/* 3. Само поле ввода: прозрачная рамка, прижато к степперам */
-[data-testid="stNumberInput"] input{background:#fff !important;color:#0F0F10 !important}
-/* 4. Степперы +/−: серые, разделитель слева, без внешнего зазора */
+/* ── ЧИСЛОВОЕ ПОЛЕ: поле со своей рамкой, степперы +/− серые ── */
 [data-testid="stNumberInput"] button,
 [data-testid="stNumberInputStepUp"],[data-testid="stNumberInputStepDown"]{
-    background:#F3F4F6 !important;color:#374151 !important;border:none !important;
-    border-left:1px solid #E5E7EB !important;box-shadow:none !important;margin:0 !important}
+    background:#F3F4F6 !important;color:#374151 !important;border:1px solid #E5E7EB !important;box-shadow:none !important;border-radius:8px !important}
 [data-testid="stNumberInput"] button:hover,
 [data-testid="stNumberInputStepUp"]:hover,[data-testid="stNumberInputStepDown"]:hover{
-    background:#E5E7EB !important;color:#4F46E5 !important;transform:none !important}
+    background:#E5E7EB !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
 [data-testid="stNumberInput"] button p,[data-testid="stNumberInput"] button span{color:inherit !important}
 [data-testid="stNumberInput"] button svg{fill:currentColor !important;color:inherit !important}
 
-/* ── ИНПУТЫ (числовое поле исключено — им управляет блок выше) ── */
-.stTextInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
-.stNumberInput input{font-size:14px !important;padding:9px 13px !important}
-.stTextInput input:focus,.stTextArea textarea:focus{border-color:#4F46E5 !important;box-shadow:0 0 0 3px rgba(79,70,229,.12) !important;outline:none !important}
-[data-testid="stNumberInput"]:focus-within{border-color:#4F46E5 !important;box-shadow:0 0 0 3px rgba(79,70,229,.12) !important}
+/* ── ИНПУТЫ ── */
+.stTextInput input,.stNumberInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
+.stTextInput input:focus,.stTextArea textarea:focus,.stNumberInput input:focus{border-color:#4F46E5 !important;box-shadow:0 0 0 3px rgba(79,70,229,.12) !important;outline:none !important}
 .stTextInput label,.stNumberInput label,.stTextArea label,.stSelectbox label,.stSlider label{color:#4B5563 !important;font-size:13px !important;font-weight:500 !important}
 
 /* ── SELECTBOX ── */
