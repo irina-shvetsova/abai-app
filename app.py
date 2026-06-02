@@ -257,7 +257,7 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      sel:[],pos:"center"},
     {title:"Меню разделов",
      desc:"Четыре раздела — полный цикл теста: Гипотезы → Планирование → Симуляция → Отчёт. Переключай их здесь.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"right",nav:"Гипотезы"},
+     sel:["NAV::Гипотезы","[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"center",nav:"Гипотезы"},
     {title:"Заполни контекст продукта",
      desc:"Введи название экрана, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
      sel:["[data-testid='stMain'] [data-testid='stColumn']","[data-testid='stMain'] [data-testid='column']","section.main [data-testid='stColumn']","[data-testid='stAppViewContainer'] [data-testid='stColumn']"],pos:"center",group:false,nav:"Гипотезы"},
@@ -266,13 +266,13 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      sel:["BTN::Сгенерировать"],pos:"center",nav:"Гипотезы"},
     {title:"Раздел «Планирование»",
      desc:"Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно и сколько дней займёт тест.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2)"],pos:"right",nav:"Планирование"},
+     sel:["NAV::Планирование"],pos:"center",nav:"Планирование"},
     {title:"Раздел «Симуляция»",
      desc:"Задай конверсии A и B, нажми ▶. Увидишь, как Thompson Sampling экономит трафик по сравнению с обычным A/B 50/50.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(3)"],pos:"right",nav:"Симуляция"},
+     sel:["NAV::Симуляция"],pos:"center",nav:"Симуляция"},
     {title:"Раздел «Отчёт»",
      desc:"Введи числа контроля и варианта B, нажми «Рассчитать». LLM напишет резюме и скажет: внедрять изменение или нет.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(4)"],pos:"right",nav:"Отчёт"}
+     sel:["NAV::Отчёт"],pos:"center",nav:"Отчёт"}
   ];
 
   var LS = "abai_v6";
@@ -332,11 +332,32 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     dimT=dimR=dimB=dimL=null;
   }
 
-  /* ─ Найти элемент по тексту (BTN::подстрока) ─ */
+  /* ─ Найти кнопку в контентной области по тексту (BTN::подстрока) ─ */
   function byText(needle){
     var btns=doc.querySelectorAll("[data-testid='stMain'] button, section.main button, [data-testid='stAppViewContainer'] button");
     for(var i=0;i<btns.length;i++){
       if(btns[i].textContent.indexOf(needle)>=0) return btns[i];
+    }
+    return null;
+  }
+
+  /* ─ Найти пункт меню в сайдбаре по тексту (NAV::Гипотезы) ─ */
+  function navItem(needle){
+    var sb=qs("[data-testid='stSidebar']");
+    if(!sb) return null;
+    /* radio-пункты Streamlit рендерит как <label>; берём тот, чей текст совпал */
+    var lbls=sb.querySelectorAll("label");
+    for(var i=0;i<lbls.length;i++){
+      var txt=lbls[i].textContent.trim();
+      if(txt===needle) return lbls[i];
+    }
+    /* запасной путь: любой компактный элемент с этим текстом, кроме кнопок */
+    var all=sb.querySelectorAll("label,span,div,p,a");
+    for(var j=0;j<all.length;j++){
+      var el=all[j];
+      if(el.textContent.trim()===needle && el.children.length<=1 && el.closest("button")===null){
+        return el;
+      }
     }
     return null;
   }
@@ -346,6 +367,7 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     var els=[];
     sels.forEach(function(s){
       if(s.indexOf("BTN::")===0){ if(!els.length){ var b=byText(s.slice(5)); if(b) els.push(b); } }
+      else if(s.indexOf("NAV::")===0){ if(!els.length){ var n=navItem(s.slice(5)); if(n) els.push(n); } }
       else if(group) doc.querySelectorAll(s).forEach(function(e){els.push(e);});
       else if(!els.length){ var e=qs(s); if(e) els.push(e); }  /* запасные селекторы: берём первый сработавший */
     });
@@ -437,17 +459,15 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     var sk=tip.querySelector("#ab-sk"); if(sk) sk.onclick=function(){endTour(false);};
   }
 
-  /* ─ Переключить раздел приложения (клик по нужному radio) ─ */
+  /* ─ Переключить раздел приложения (клик по нужному пункту меню) ─ */
   function clickNav(label){
-    var lbls=doc.querySelectorAll("[data-testid='stSidebar'] [data-testid='stRadio'] label");
-    for(var i=0;i<lbls.length;i++){
-      if(lbls[i].textContent.trim()===label){
-        var inp=lbls[i].querySelector("input");
-        if(inp && !inp.checked){ lbls[i].click(); return true; }
-        return false; /* уже выбран — rerun не будет */
-      }
-    }
-    return false;
+    var item=navItem(label);
+    if(!item) return false;
+    var lbl=item.closest("label")||item;
+    var inp=lbl.querySelector ? lbl.querySelector("input") : null;
+    if(inp && inp.checked) return false;       /* уже выбран — rerun не будет */
+    lbl.click();
+    return true;
   }
 
   /* ─ GO STEP ─ */
