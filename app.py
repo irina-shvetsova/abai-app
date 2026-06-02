@@ -186,6 +186,13 @@ p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
 [data-testid="stNumberInputStepUp"]{border-top-right-radius:8px !important;border-bottom-right-radius:8px !important;border-top-left-radius:0 !important;border-bottom-left-radius:0 !important}
 /* Поле ввода: правый край прямой, чтобы стыковаться со степперами без зазора */
 [data-testid="stNumberInput"] input{border-top-right-radius:0 !important;border-bottom-right-radius:0 !important}
+/* BaseWeb-обёртка инпута рисует свою рамку со скруглением справа — это и есть «тёмный уголок». Выпрямляем правый край. */
+[data-testid="stNumberInput"] [data-baseweb="input"],
+[data-testid="stNumberInput"] [data-baseweb="base-input"],
+[data-testid="stNumberInputContainer"]{
+    border-top-right-radius:0 !important;border-bottom-right-radius:0 !important;
+    border-top-left-radius:8px !important;border-bottom-left-radius:8px !important;
+    border-right:none !important;overflow:hidden !important}
 
 /* ── ИНПУТЫ ── */
 .stTextInput input,.stNumberInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
@@ -259,11 +266,11 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      desc:"Четыре раздела — полный цикл теста: Гипотезы → Планирование → Симуляция → Отчёт. Переключай их здесь.",
      sel:["NAV::Гипотезы","[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"center",nav:"Гипотезы"},
     {title:"Заполни контекст продукта",
-     desc:"Введи название экрана, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
-     sel:["[data-testid='stMain'] [data-testid='stColumn']","[data-testid='stMain'] [data-testid='column']","section.main [data-testid='stColumn']","[data-testid='stAppViewContainer'] [data-testid='stColumn']"],pos:"center",group:false,nav:"Гипотезы"},
+     desc:"Введи название экрана слева, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
+     sel:[],pos:"center",nav:"Гипотезы"},
     {title:"Нажми «Сгенерировать гипотезы»",
-     desc:"Нажми эту кнопку после заполнения формы. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и уверенностью.",
-     sel:["BTN::Сгенерировать"],pos:"center",nav:"Гипотезы"},
+     desc:"После заполнения формы нажми кнопку «Сгенерировать гипотезы» внизу. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и уверенностью.",
+     sel:[],pos:"center",nav:"Гипотезы"},
     {title:"Раздел «Планирование»",
      desc:"Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно и сколько дней займёт тест.",
      sel:["NAV::Планирование"],pos:"center",nav:"Планирование"},
@@ -474,13 +481,15 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
   function go(idx){
     cur=idx;
     var s=STEPS[idx];
+    /* Сразу прячем старую подсветку, чтобы она не «прыгала» по старым координатам */
+    setHL(null);
     /* Если шаг привязан к разделу — переключаем приложение на него */
     var switched = s.nav ? clickNav(s.nav) : false;
     if(tip){tip.remove();}
     tip=doc.createElement("div"); tip.id="ab-tip"; doc.body.appendChild(tip);
     render(idx);
     /* После клика Streamlit перерисовывает DOM — ждём дольше и измеряем заново */
-    var delay = switched ? 450 : 30;
+    var delay = switched ? 500 : 30;
     function place(retries){
       var bb = s.sel.length ? bbox(s.sel, s.group) : null;
       setHL(bb); setTip(bb,s.pos);
@@ -489,6 +498,8 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
         setTimeout(function(){ place(retries-1); }, 250);
       }
     }
+    /* карточку показываем сразу по центру; подсветку — после оседания DOM */
+    setTip(null,"center");
     setTimeout(function(){ place(3); }, delay);
   }
 
