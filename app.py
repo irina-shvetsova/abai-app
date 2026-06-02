@@ -181,18 +181,21 @@ p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
     background:#E5E7EB !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
 [data-testid="stNumberInput"] button p,[data-testid="stNumberInput"] button span{color:inherit !important}
 [data-testid="stNumberInput"] button svg{fill:currentColor !important;color:inherit !important}
-/* Скругляем внешние углы степперов: '−' слева, '+' справа — чтобы группа была единым блоком */
-[data-testid="stNumberInputStepDown"]{border-top-left-radius:8px !important;border-bottom-left-radius:8px !important;border-top-right-radius:0 !important;border-bottom-right-radius:0 !important;border-right:none !important}
-[data-testid="stNumberInputStepUp"]{border-top-right-radius:8px !important;border-bottom-right-radius:8px !important;border-top-left-radius:0 !important;border-bottom-left-radius:0 !important}
-/* Поле ввода: правый край прямой, чтобы стыковаться со степперами без зазора */
-[data-testid="stNumberInput"] input{border-top-right-radius:0 !important;border-bottom-right-radius:0 !important}
-/* BaseWeb-обёртка инпута рисует свою рамку со скруглением справа — это и есть «тёмный уголок». Выпрямляем правый край. */
+/* Группа [поле][−][+] как единый блок без зазоров.
+   Правый край ПОЛЯ — прямой и без рамки (стыкуется с '−').
+   Внешний правый край ('+') — скруглён. */
+[data-testid="stNumberInput"]>div,
 [data-testid="stNumberInput"] [data-baseweb="input"],
 [data-testid="stNumberInput"] [data-baseweb="base-input"],
-[data-testid="stNumberInputContainer"]{
-    border-top-right-radius:0 !important;border-bottom-right-radius:0 !important;
-    border-top-left-radius:8px !important;border-bottom-left-radius:8px !important;
-    border-right:none !important;overflow:hidden !important}
+[data-testid="stNumberInputContainer"],
+[data-testid="stNumberInput"] input{
+    border-top-right-radius:0 !important;border-bottom-right-radius:0 !important}
+[data-testid="stNumberInput"] [data-baseweb="input"],
+[data-testid="stNumberInputContainer"]{border-right:none !important}
+/* Степперы вплотную к полю, без отрицательного/положительного зазора */
+[data-testid="stNumberInput"]>div{gap:0 !important}
+[data-testid="stNumberInputStepDown"]{border-top-left-radius:0 !important;border-bottom-left-radius:0 !important;border-top-right-radius:0 !important;border-bottom-right-radius:0 !important;border-right:none !important;margin-left:0 !important}
+[data-testid="stNumberInputStepUp"]{border-top-right-radius:8px !important;border-bottom-right-radius:8px !important;border-top-left-radius:0 !important;border-bottom-left-radius:0 !important}
 
 /* ── ИНПУТЫ ── */
 .stTextInput input,.stNumberInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
@@ -401,11 +404,19 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
   }
 
   /* ─ POSITION HIGHLIGHT + DIM ─ */
-  function setHL(bb){
+  function setHL(bb, full){
     ensureNodes();
     if(!bb){
       if(hlBox){hlBox.style.display="none";}
-      if(dimT){dimT.style.display="none";dimR.style.display="none";dimB.style.display="none";dimL.style.display="none";}
+      if(full){
+        /* Сплошное затемнение всего экрана (шаг без подсветки конкретного элемента) */
+        if(dimT){
+          dimT.style.display="block"; dimT.style.top="0"; dimT.style.left="0"; dimT.style.right="0"; dimT.style.bottom="0"; dimT.style.height="auto";
+          dimR.style.display="none"; dimB.style.display="none"; dimL.style.display="none";
+        }
+      } else {
+        if(dimT){dimT.style.display="none";dimR.style.display="none";dimB.style.display="none";dimL.style.display="none";}
+      }
       return;
     }
     var PD=7, VW=P.innerWidth||doc.documentElement.clientWidth, VH=P.innerHeight||doc.documentElement.clientHeight;
@@ -481,8 +492,9 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
   function go(idx){
     cur=idx;
     var s=STEPS[idx];
-    /* Сразу прячем старую подсветку, чтобы она не «прыгала» по старым координатам */
-    setHL(null);
+    var hasHL = s.sel && s.sel.length>0;   /* шаг подсвечивает конкретный элемент? */
+    /* Прячем старую подсветку, чтобы она не «прыгала». Для центрированных шагов сразу даём сплошной фон. */
+    setHL(null, !hasHL);
     /* Если шаг привязан к разделу — переключаем приложение на него */
     var switched = s.nav ? clickNav(s.nav) : false;
     if(tip){tip.remove();}
@@ -491,10 +503,11 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     /* После клика Streamlit перерисовывает DOM — ждём дольше и измеряем заново */
     var delay = switched ? 500 : 30;
     function place(retries){
-      var bb = s.sel.length ? bbox(s.sel, s.group) : null;
-      setHL(bb); setTip(bb,s.pos);
-      /* элемент мог ещё не отрисоваться — пробуем ещё пару раз */
-      if(!bb && s.sel.length && retries>0){
+      var bb = hasHL ? bbox(s.sel, s.group) : null;
+      /* если элемент не нашёлся — оставляем сплошной фон, не мигаем пустотой */
+      setHL(bb, !bb);
+      setTip(bb,s.pos);
+      if(!bb && hasHL && retries>0){
         setTimeout(function(){ place(retries-1); }, 250);
       }
     }
