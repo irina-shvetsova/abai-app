@@ -129,11 +129,11 @@ st.markdown("""
 .block-container{padding-top:1.75rem !important;padding-bottom:3rem !important;max-width:1160px !important}
 .stApp,.stApp>div,.main{background:#ffffff !important}
 
-/* ── САЙДБАР ── */
-[data-testid="stSidebar"]{background:#F9FAFB !important;border-right:1px solid #E5E7EB !important;min-width:220px !important;max-width:240px !important}
-[data-testid="stSidebar"] .stMarkdown h2{font-size:15px !important;font-weight:600 !important;color:#0F0F10 !important;letter-spacing:-0.02em !important;margin-bottom:0 !important}
-[data-testid="stSidebar"] .stMarkdown p,[data-testid="stSidebar"] .stMarkdown em{color:#9CA3AF !important;font-size:11px !important}
-[data-testid="stSidebar"] hr{border-color:#E5E7EB !important;margin:12px 0 !important}
+/* ── САЙДБАР (тёмная инверсия — гарантированный контраст) ── */
+[data-testid="stSidebar"]{background:#18181B !important;border-right:1px solid #27272A !important;min-width:230px !important;max-width:250px !important}
+[data-testid="stSidebar"] .stMarkdown h2{font-size:15px !important;font-weight:600 !important;color:#FAFAFA !important;letter-spacing:-0.02em !important;margin-bottom:0 !important}
+[data-testid="stSidebar"] .stMarkdown p,[data-testid="stSidebar"] .stMarkdown em{color:#A1A1AA !important;font-size:11px !important}
+[data-testid="stSidebar"] hr{border-color:#27272A !important;margin:12px 0 !important}
 
 /* ── НАВИГАЦИЯ: скрываем только кружок ── */
 [data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"]>div:first-child{display:none !important}
@@ -141,19 +141,19 @@ st.markdown("""
     background:transparent !important;border:none !important;
     border-radius:8px !important;padding:9px 14px !important;
     font-size:13px !important;font-weight:400 !important;
-    /* ВАЖНО: color с максимальным specificity чтобы перебить "p,label" */
-    color:#3a3a3c !important;
+    /* Светлый текст на тёмном фоне — читается всегда */
+    color:#D4D4D8 !important;
     cursor:pointer !important;display:flex !important;align-items:center !important;
     gap:8px !important;width:100% !important;margin-bottom:2px !important;
-    transition:background .12s !important}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{background:#EDEDF0 !important;color:#0F0F10 !important}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){background:#EEF2FF !important;color:#4F46E5 !important;font-weight:500 !important}
+    transition:background .12s,color .12s !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover{background:#27272A !important;color:#FFFFFF !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked){background:#312E81 !important;color:#FFFFFF !important;font-weight:600 !important}
 [data-testid="stSidebar"] [data-testid="stRadio"] p{color:inherit !important;font-size:inherit !important}
 /* Активная полоска */
 [data-testid="stSidebar"] [data-testid="stRadio"] label::before{content:'' !important;width:3px !important;height:14px !important;background:transparent !important;border-radius:2px !important;flex-shrink:0 !important}
-[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)::before{background:#4F46E5 !important}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)::before{background:#818CF8 !important}
 /* Метка группы "// навигация" */
-[data-testid="stSidebar"] [data-testid="stRadio"]>div>p{font-size:10px !important;font-weight:600 !important;color:#9CA3AF !important;text-transform:uppercase !important;letter-spacing:.08em !important;padding:4px 14px !important;margin-bottom:2px !important}
+[data-testid="stSidebar"] [data-testid="stRadio"]>div>p{font-size:10px !important;font-weight:600 !important;color:#71717A !important;text-transform:uppercase !important;letter-spacing:.08em !important;padding:4px 14px !important;margin-bottom:2px !important}
 
 /* ── ТИПОГРАФИКА ── */
 h1{font-size:22px !important;font-weight:600 !important;color:#0F0F10 !important;letter-spacing:-0.025em !important;line-height:1.25 !important;margin-bottom:6px !important}
@@ -161,12 +161,21 @@ h3{font-size:14px !important;font-weight:500 !important;color:#1c1c1e !important
 /* НЕ применяем глобальный color к label — это ломает навигацию */
 p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
 
-/* ── КНОПКИ ── */
-.stButton>button{background:#0F0F10 !important;color:#fff !important;border:none !important;border-radius:10px !important;font-size:14px !important;font-weight:500 !important;padding:0.6rem 1.5rem !important;box-shadow:0 1px 2px rgba(15,15,16,.08),0 4px 12px rgba(15,15,16,.1) !important;transition:all .15s !important}
-.stButton>button:hover{background:#4F46E5 !important;transform:translateY(-1px) !important;box-shadow:0 2px 6px rgba(79,70,229,.15),0 8px 24px rgba(79,70,229,.25) !important}
+/* ── КНОПКИ (индиго вместо тяжёлого чёрного) ── */
+.stButton>button{background:#4F46E5 !important;color:#fff !important;border:none !important;border-radius:10px !important;font-size:14px !important;font-weight:500 !important;padding:0.6rem 1.5rem !important;box-shadow:0 1px 2px rgba(79,70,229,.12),0 4px 12px rgba(79,70,229,.18) !important;transition:all .15s !important}
+.stButton>button:hover{background:#4338CA !important;transform:translateY(-1px) !important;box-shadow:0 2px 6px rgba(79,70,229,.2),0 8px 24px rgba(79,70,229,.3) !important}
 .stButton>button:active{transform:translateY(0) !important}
-[data-testid="stSidebar"] .stButton>button{background:#EEF2FF !important;color:#4F46E5 !important;border:1px solid #C7D2FE !important;box-shadow:none !important;font-size:12px !important;padding:0.45rem 1rem !important}
-[data-testid="stSidebar"] .stButton>button:hover{background:#E0E7FF !important;color:#3730A3 !important;transform:none !important;box-shadow:none !important}
+[data-testid="stSidebar"] .stButton>button{background:#27272A !important;color:#E4E4E7 !important;border:1px solid #3F3F46 !important;box-shadow:none !important;font-size:12px !important;padding:0.45rem 1rem !important}
+[data-testid="stSidebar"] .stButton>button:hover{background:#3730A3 !important;color:#fff !important;border-color:#4F46E5 !important;transform:none !important;box-shadow:none !important}
+
+/* ── ШАГОВЫЕ КНОПКИ +/− у number_input (делаем светлыми) ── */
+[data-testid="stNumberInput"] button,
+[data-testid="stNumberInputStepUp"],[data-testid="stNumberInputStepDown"]{
+    background:#fff !important;color:#6B7280 !important;border:1px solid #E5E7EB !important;box-shadow:none !important}
+[data-testid="stNumberInput"] button:hover,
+[data-testid="stNumberInputStepUp"]:hover,[data-testid="stNumberInputStepDown"]:hover{
+    background:#F3F4F6 !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
+[data-testid="stNumberInput"] button svg{fill:currentColor !important;color:inherit !important}
 
 /* ── ИНПУТЫ ── */
 .stTextInput input,.stNumberInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
@@ -241,19 +250,19 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      sel:["[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"right"},
     {title:"Заполни контекст продукта",
      desc:"Введи название экрана, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
-     sel:["[data-testid='stSidebar'] ~ section .stColumn:first-child"],pos:"right",group:true},
+     sel:["section.main [data-testid='stColumn']:first-child","[data-testid='stSidebar'] ~ section [data-testid='column']:first-child"],pos:"right",group:true},
     {title:"Нажми «Сгенерировать гипотезы»",
      desc:"Нажми эту кнопку после заполнения формы. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и уверенностью.",
-     sel:["[data-testid='stSidebar'] ~ section .stButton:first-of-type button"],pos:"top"},
+     sel:["section.main .stButton button","[data-testid='stSidebar'] ~ section .stButton button"],pos:"top"},
     {title:"Раздел «Планирование»",
      desc:"Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно и сколько дней займёт тест.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2) label"],pos:"right"},
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2)"],pos:"right"},
     {title:"Раздел «Симуляция»",
      desc:"Задай конверсии A и B, нажми ▶. Увидишь, как Thompson Sampling экономит трафик по сравнению с обычным A/B 50/50.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(3) label"],pos:"right"},
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(3)"],pos:"right"},
     {title:"Раздел «Отчёт»",
      desc:"Введи числа контроля и варианта B, нажми «Рассчитать». LLM напишет резюме и скажет: внедрять изменение или нет.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(4) label"],pos:"right"}
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(4)"],pos:"right"}
   ];
 
   var LS = "abai_v6";
@@ -274,7 +283,7 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
       ".ab-dim{position:fixed;background:rgba(15,15,16,.5);z-index:9980;pointer-events:all;transition:all .25s cubic-bezier(.4,0,.2,1)}"+
       /* Рамка highlight — отдельный div с border */
       "#ab-hl{position:fixed;z-index:9985;pointer-events:none;border-radius:10px;"+
-        "border:2.5px solid #4F46E5;box-shadow:0 0 0 4px rgba(79,70,229,.18);"+
+        "border:3px solid #818CF8;box-shadow:0 0 0 3px rgba(129,140,248,.35),0 0 22px 4px rgba(129,140,248,.45);"+
         "transition:all .25s cubic-bezier(.4,0,.2,1)}"+
       "#ab-tip{position:fixed;background:#fff;border-radius:14px;padding:20px 22px 16px;width:292px;"+
         "box-shadow:0 16px 48px rgba(0,0,0,.2),0 2px 8px rgba(0,0,0,.07);z-index:9999;"+
@@ -318,7 +327,7 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     var els=[];
     sels.forEach(function(s){
       if(group) doc.querySelectorAll(s).forEach(function(e){els.push(e);});
-      else { var e=qs(s); if(e) els.push(e); }
+      else if(!els.length){ var e=qs(s); if(e) els.push(e); }  /* запасные селекторы: берём первый сработавший */
     });
     if(!els.length) return null;
     var mt=1e9,ml=1e9,mb=-1e9,mr=-1e9;
@@ -355,8 +364,9 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 
   /* ─ POSITION TOOLTIP ─ */
   function setTip(bb, pos){
-    var TW=292, TH=230, PAD=16;
-    /* ВАЖНО: берём размеры из parent window, а не из iframe */
+    var PAD=16, EDGE=10;
+    /* Реальные размеры карточки (после render), а не захардкоженные */
+    var TW=tip.offsetWidth||292, TH=tip.offsetHeight||230;
     var VW=P.innerWidth||doc.documentElement.clientWidth;
     var VH=P.innerHeight||doc.documentElement.clientHeight;
     var t,l,ac="";
@@ -366,6 +376,12 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     if(!bb||pos==="center"){
       t=Math.round(VH/2-TH/2); l=Math.round(VW/2-TW/2);
     } else {
+      /* Авто-переворот, если у выбранной стороны не хватает места */
+      if(pos==="right" && bb.r+PAD+TW > VW-EDGE && bb.l-PAD-TW > EDGE) pos="left";
+      else if(pos==="left" && bb.l-PAD-TW < EDGE && bb.r+PAD+TW < VW-EDGE) pos="right";
+      else if(pos==="top" && bb.t-PAD-TH < EDGE && bb.b+PAD+TH < VH-EDGE) pos="bottom";
+      else if(pos==="bottom" && bb.b+PAD+TH > VH-EDGE && bb.t-PAD-TH > EDGE) pos="top";
+
       if(pos==="right"){
         l=bb.r+PAD; t=Math.round(bb.cy-TH/2);
         ac="l"; arw.style.left=(bb.r+PAD-12)+"px"; arw.style.top=Math.round(bb.cy-9)+"px";
@@ -379,8 +395,9 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
         t=bb.t-TH-PAD; l=Math.round(bb.cx-TW/2);
         ac="b"; arw.style.left=Math.round(bb.cx-9)+"px"; arw.style.top=(bb.t-PAD)+"px";
       }
-      t=Math.max(8,Math.min(t,VH-TH-8));
-      l=Math.max(8,Math.min(l,VW-TW-8));
+      /* Жёсткий зажим в границы экрана по обеим осям */
+      t=Math.max(EDGE,Math.min(t,VH-TH-EDGE));
+      l=Math.max(EDGE,Math.min(l,VW-TW-EDGE));
       if(ac){ arw.className=ac; arw.style.display="block"; }
     }
     tip.style.top=t+"px"; tip.style.left=l+"px";
