@@ -181,6 +181,11 @@ p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
     background:#E5E7EB !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
 [data-testid="stNumberInput"] button p,[data-testid="stNumberInput"] button span{color:inherit !important}
 [data-testid="stNumberInput"] button svg{fill:currentColor !important;color:inherit !important}
+/* Скругляем внешние углы степперов: '−' слева, '+' справа — чтобы группа была единым блоком */
+[data-testid="stNumberInputStepDown"]{border-top-left-radius:8px !important;border-bottom-left-radius:8px !important;border-top-right-radius:0 !important;border-bottom-right-radius:0 !important;border-right:none !important}
+[data-testid="stNumberInputStepUp"]{border-top-right-radius:8px !important;border-bottom-right-radius:8px !important;border-top-left-radius:0 !important;border-bottom-left-radius:0 !important}
+/* Поле ввода: правый край прямой, чтобы стыковаться со степперами без зазора */
+[data-testid="stNumberInput"] input{border-top-right-radius:0 !important;border-bottom-right-radius:0 !important}
 
 /* ── ИНПУТЫ ── */
 .stTextInput input,.stNumberInput input,.stTextArea textarea{background:#fff !important;color:#0F0F10 !important;border:1px solid #E5E7EB !important;border-radius:8px !important;font-size:14px !important;padding:9px 13px !important}
@@ -255,10 +260,10 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      sel:["[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"right",nav:"Гипотезы"},
     {title:"Заполни контекст продукта",
      desc:"Введи название экрана, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
-     sel:["section.main [data-testid='stColumn']:first-child","[data-testid='stSidebar'] ~ section [data-testid='column']:first-child"],pos:"right",group:true,nav:"Гипотезы"},
+     sel:["[data-testid='stMain'] [data-testid='stColumn']","[data-testid='stMain'] [data-testid='column']","section.main [data-testid='stColumn']","[data-testid='stAppViewContainer'] [data-testid='stColumn']"],pos:"center",group:false,nav:"Гипотезы"},
     {title:"Нажми «Сгенерировать гипотезы»",
      desc:"Нажми эту кнопку после заполнения формы. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и уверенностью.",
-     sel:["section.main .stButton button","[data-testid='stSidebar'] ~ section .stButton button"],pos:"top",nav:"Гипотезы"},
+     sel:["BTN::Сгенерировать"],pos:"center",nav:"Гипотезы"},
     {title:"Раздел «Планирование»",
      desc:"Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно и сколько дней займёт тест.",
      sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2)"],pos:"right",nav:"Планирование"},
@@ -327,11 +332,21 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     dimT=dimR=dimB=dimL=null;
   }
 
+  /* ─ Найти элемент по тексту (BTN::подстрока) ─ */
+  function byText(needle){
+    var btns=doc.querySelectorAll("[data-testid='stMain'] button, section.main button, [data-testid='stAppViewContainer'] button");
+    for(var i=0;i<btns.length;i++){
+      if(btns[i].textContent.indexOf(needle)>=0) return btns[i];
+    }
+    return null;
+  }
+
   /* ─ BBOX ─ */
   function bbox(sels, group){
     var els=[];
     sels.forEach(function(s){
-      if(group) doc.querySelectorAll(s).forEach(function(e){els.push(e);});
+      if(s.indexOf("BTN::")===0){ if(!els.length){ var b=byText(s.slice(5)); if(b) els.push(b); } }
+      else if(group) doc.querySelectorAll(s).forEach(function(e){els.push(e);});
       else if(!els.length){ var e=qs(s); if(e) els.push(e); }  /* запасные селекторы: берём первый сработавший */
     });
     if(!els.length) return null;
@@ -378,47 +393,22 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     dimR.style.display="block"; dimR.style.top=t+"px"; dimR.style.left=(l+w)+"px"; dimR.style.right="0"; dimR.style.height=h+"px";
   }
 
-  /* ─ POSITION TOOLTIP ─ */
+  /* ─ POSITION TOOLTIP: всегда по центру области контента ─ */
   function setTip(bb, pos){
-    var PAD=16, EDGE=10;
-    /* Реальные размеры карточки (после render), а не захардкоженные */
-    var TW=tip.offsetWidth||292, TH=tip.offsetHeight||230;
+    var TW=tip.offsetWidth||300, TH=tip.offsetHeight||230;
     var VW=P.innerWidth||doc.documentElement.clientWidth;
     var VH=P.innerHeight||doc.documentElement.clientHeight;
-    var t,l,ac="";
-
-    arw.className=""; arw.style.display="none";
-
-    if(!bb||pos==="center"){
-      t=Math.round(VH/2-TH/2); l=Math.round(VW/2-TW/2);
-    } else {
-      /* Авто-переворот, если у выбранной стороны не хватает места */
-      if(pos==="right" && bb.r+PAD+TW > VW-EDGE && bb.l-PAD-TW > EDGE) pos="left";
-      else if(pos==="left" && bb.l-PAD-TW < EDGE && bb.r+PAD+TW < VW-EDGE) pos="right";
-      else if(pos==="top" && bb.t-PAD-TH < EDGE && bb.b+PAD+TH < VH-EDGE) pos="bottom";
-      else if(pos==="bottom" && bb.b+PAD+TH > VH-EDGE && bb.t-PAD-TH > EDGE) pos="top";
-
-      if(pos==="right"){
-        l=bb.r+PAD; t=Math.round(bb.cy-TH/2);
-        ac="l"; arw.style.left=(bb.r+PAD-12)+"px"; arw.style.top=Math.round(bb.cy-9)+"px";
-      } else if(pos==="left"){
-        l=bb.l-TW-PAD; t=Math.round(bb.cy-TH/2);
-        ac="r"; arw.style.left=(bb.l-PAD)+"px"; arw.style.top=Math.round(bb.cy-9)+"px";
-      } else if(pos==="bottom"){
-        t=bb.b+PAD; l=Math.round(bb.cx-TW/2);
-        ac="t"; arw.style.left=Math.round(bb.cx-9)+"px"; arw.style.top=(bb.b+PAD-12)+"px";
-      } else { /* top */
-        t=bb.t-TH-PAD; l=Math.round(bb.cx-TW/2);
-        ac="b"; arw.style.left=Math.round(bb.cx-9)+"px"; arw.style.top=(bb.t-PAD)+"px";
-      }
-      /* Жёсткий зажим в границы экрана по обеим осям */
-      t=Math.max(EDGE,Math.min(t,VH-TH-EDGE));
-      var lMin=EDGE;
-      /* для right карточка не должна заезжать обратно на подсвеченный элемент/сайдбар */
-      if(pos==="right") lMin=Math.max(EDGE, bb.r+PAD);
-      l=Math.max(lMin,Math.min(l,VW-TW-EDGE));
-      if(ac){ arw.className=ac; arw.style.display="block"; }
-    }
+    /* стрелка больше не используется */
+    if(arw){ arw.className=""; arw.style.display="none"; }
+    /* центрируем по горизонтали в области ПРАВЕЕ сайдбара (там серая плашка) */
+    var sb=qs("[data-testid='stSidebar']");
+    var sbW = sb ? sb.getBoundingClientRect().right : 0;
+    var areaL = sbW, areaW = VW - sbW;
+    var l = Math.round(areaL + areaW/2 - TW/2);
+    var t = Math.round(VH/2 - TH/2);
+    /* подстраховка: не вылезаем за края экрана */
+    l = Math.max(10, Math.min(l, VW-TW-10));
+    t = Math.max(10, Math.min(t, VH-TH-10));
     tip.style.top=t+"px"; tip.style.left=l+"px";
   }
 
@@ -471,10 +461,15 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     render(idx);
     /* После клика Streamlit перерисовывает DOM — ждём дольше и измеряем заново */
     var delay = switched ? 450 : 30;
-    setTimeout(function(){
+    function place(retries){
       var bb = s.sel.length ? bbox(s.sel, s.group) : null;
       setHL(bb); setTip(bb,s.pos);
-    }, delay);
+      /* элемент мог ещё не отрисоваться — пробуем ещё пару раз */
+      if(!bb && s.sel.length && retries>0){
+        setTimeout(function(){ place(retries-1); }, 250);
+      }
+    }
+    setTimeout(function(){ place(3); }, delay);
   }
 
   /* ─ START / END ─ */
