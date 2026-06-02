@@ -299,17 +299,19 @@ st.markdown("""
 [data-testid="stSidebar"] hr { border-color: #E5E7EB !important; margin: 12px 0 !important; }
 
 /* Навигация — Radio */
-/* Скрываем только строку-заголовок группы (первый div > label до options) */
+/* Скрываем только кружок радиокнопки, НЕ весь baseweb-radio блок */
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"] > div:first-child { display: none !important; }
+/* Скрываем заголовок-label группы радио (не сами пункты) */
 [data-testid="stSidebar"] [data-testid="stRadio"] > div > div:first-child > label { display: none !important; }
 /* Каждый пункт меню */
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     background: transparent !important; border: none !important;
     border-radius: 8px !important; padding: 9px 14px !important;
     font-size: 13px !important; font-weight: 400 !important;
-    color: #4B5563 !important; cursor: pointer !important;
+    color: #3a3a3c !important; cursor: pointer !important;
     display: flex !important; align-items: center !important; gap: 8px !important;
     width: 100% !important; margin-bottom: 2px !important;
-    transition: background .15s !important;
+    transition: background .12s !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
     background: #EDEDF0 !important; color: #0F0F10 !important;
@@ -318,33 +320,20 @@ st.markdown("""
     background: #EEF2FF !important; color: #4F46E5 !important; font-weight: 500 !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] p { color: inherit !important; font-size: inherit !important; }
-/* Скрываем радиокружки, оставляем текст */
-[data-testid="stSidebar"] [data-baseweb="radio"] { display: none !important; }
 /* Индикатор активной страницы — левая полоска */
 [data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)::before {
-    content: '' !important;
-    width: 3px !important; height: 14px !important;
-    background: #4F46E5 !important;
-    border-radius: 2px !important;
-    flex-shrink: 0 !important;
+    content: '' !important; width: 3px !important; height: 14px !important;
+    background: #4F46E5 !important; border-radius: 2px !important; flex-shrink: 0 !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label::before {
-    content: '' !important;
-    width: 3px !important; height: 14px !important;
-    background: transparent !important;
-    border-radius: 2px !important;
-    flex-shrink: 0 !important;
+    content: '' !important; width: 3px !important; height: 14px !important;
+    background: transparent !important; border-radius: 2px !important; flex-shrink: 0 !important;
 }
-
-/* Заголовок группы "// навигация" — маленький uppercase */
+/* Заголовок группы "// навигация" */
 [data-testid="stSidebar"] [data-testid="stRadio"] > div > p {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    color: #9CA3AF !important;
-    text-transform: uppercase !important;
-    letter-spacing: .08em !important;
-    padding: 4px 14px 4px !important;
-    margin-bottom: 2px !important;
+    font-size: 10px !important; font-weight: 600 !important; color: #9CA3AF !important;
+    text-transform: uppercase !important; letter-spacing: .08em !important;
+    padding: 4px 14px !important; margin-bottom: 2px !important;
 }
 
 /* ── ТИПОГРАФИКА ── */
@@ -523,310 +512,313 @@ ONBOARDING_HTML = """
 (function() {
   var doc = window.parent.document;
 
-  /* ─────────────────────────────────────────────────────────────
-     ШАГИ ТУРА
-     anchor   — CSS-селектор элемента, которого касается подсказка
-     pos      — сторона, с которой появится тултип: right/left/bottom/top/center
-     arrow    — сторона стрелки на тултипе (указывает НА элемент): left/right/top/bottom/none
-     Для каждой страницы используются разные селекторы.
+  /* ─────────────────────────────────────────────────────────────────
+     ШАГИ:
+     anchors  — массив CSS-селекторов; highlight обернёт их все в один bbox
+     pos      — куда ставить тултип: right / left / bottom / top / center
+     Шаги 2,5,6,7: конкретные пункты nav (nth-of-type)
+     Шаг 3: весь левый столбец формы (.stColumn:first-child)
+     Шаг 4: кнопка «Сгенерировать» (.stButton button)
   ───────────────────────────────────────────────────────────────── */
   var STEPS = [
     {
       title: "Добро пожаловать в AB·AI",
-      desc: "Это полный цикл A/B-тестирования с ИИ. Тур покажет каждый экран и объяснит, что делать — за 1 минуту.",
-      anchor: null,
-      pos: "center",
-      arrow: "none"
+      desc: "Платформа для A/B-тестирования с ИИ. Тур покажет каждый экран и что с ним делать — займёт около минуты.",
+      anchors: [],
+      pos: "center"
     },
     {
       title: "Меню разделов",
-      desc: "Переключайся между разделами отсюда. Начни с «Гипотезы», затем «Планирование», «Симуляция», «Отчёт» — это полный pipeline теста.",
-      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
-      pos: "right",
-      arrow: "left"
+      desc: "Четыре раздела — полный цикл теста: Гипотезы → Планирование → Симуляция → Отчёт. Нажимай по порядку.",
+      anchors: ["[data-testid='stSidebar'] [data-testid='stRadio']"],
+      pos: "right"
     },
     {
       title: "Заполни контекст продукта",
-      desc: "Введи название экрана, выбери метрику и опиши, что именно ты хочешь улучшить. Чем точнее — тем лучше гипотезы от LLM.",
-      anchor: ".stTextInput:first-of-type",
-      pos: "right",
-      arrow: "left"
+      desc: "Введи название экрана, выбери метрику, опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
+      anchors: [
+        "[data-testid='stSidebar'] ~ section .stColumn:first-child .stTextInput",
+        "[data-testid='stSidebar'] ~ section .stColumn:first-child .stSelectbox",
+        "[data-testid='stSidebar'] ~ section .stColumn:first-child .stSlider"
+      ],
+      groupAll: true,
+      pos: "right"
     },
     {
-      title: "Нажми «Сгенерировать»",
-      desc: "После заполнения формы нажми эту кнопку. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и оценкой уверенности.",
-      anchor: "[data-testid='stSidebar'] ~ div button:not([kind='secondaryFormSubmit'])",
-      pos: "bottom",
-      arrow: "top",
-      sbSelector: ".stButton button"
+      title: "Нажми «Сгенерировать гипотезы»",
+      desc: "После заполнения нажми эту кнопку. LLM вернёт 2–7 конкретных идей с ожидаемым эффектом и оценкой уверенности.",
+      anchors: ["[data-testid='stSidebar'] ~ section .stButton button"],
+      pos: "top"
     },
     {
-      title: "Рассчитай нужный объём",
-      desc: "В разделе «Планирование» передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно собрать и сколько дней займёт тест.",
-      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
-      pos: "right",
-      arrow: "left"
+      title: "Раздел «Планирование»",
+      desc: "Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей собрать и сколько дней займёт тест.",
+      anchors: ["[data-testid='stSidebar'] [data-testid='stRadio'] label:nth-child(2)"],
+      pos: "right"
     },
     {
-      title: "Запусти симуляцию трафика",
-      desc: "В разделе «Симуляция» задай конверсии вариантов и нажми ▶. Увидишь, насколько Thompson Sampling экономит трафик по сравнению с обычным A/B.",
-      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
-      pos: "right",
-      arrow: "left"
+      title: "Раздел «Симуляция»",
+      desc: "Задай конверсии A и B и нажми ▶. Увидишь, как Thompson Sampling экономит трафик по сравнению с обычным 50/50.",
+      anchors: ["[data-testid='stSidebar'] [data-testid='stRadio'] label:nth-child(3)"],
+      pos: "right"
     },
     {
-      title: "Загрузи результаты — получи отчёт",
-      desc: "В разделе «Отчёт» введи числа контрольной и тестовой групп, нажми «Рассчитать». LLM напишет бизнес-резюме и скажет, стоит ли внедрять изменение.",
-      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
-      pos: "right",
-      arrow: "left"
+      title: "Раздел «Отчёт»",
+      desc: "Введи числа контроля и варианта B, нажми «Рассчитать». LLM напишет бизнес-резюме и скажет: внедрять или нет.",
+      anchors: ["[data-testid='stSidebar'] [data-testid='stRadio'] label:nth-child(4)"],
+      pos: "right"
     }
   ];
 
-  var LS_KEY = "abai_tour_v4";
-  var step = 0;
-  var overlay, hl, tip, arrow;
+  var LS_KEY = "abai_tour_v5";
+  var curStep = 0;
+  var overlay, hl, tip, arrowEl;
 
-  function isDone() { try { return !!localStorage.getItem(LS_KEY); } catch(e) { return false; } }
-  function markDone() { try { localStorage.setItem(LS_KEY, "1"); } catch(e) {} }
-  function qs(sel) { return doc.querySelector(sel); }
-  function qsAll(sel) { return doc.querySelectorAll(sel); }
+  function isDone(){ try{ return !!localStorage.getItem(LS_KEY); }catch(e){ return false; } }
+  function markDone(){ try{ localStorage.setItem(LS_KEY,"1"); }catch(e){} }
+  function qs(s){ return doc.querySelector(s); }
 
-  /* ─── СТИЛИ ─── */
-  function injectStyles() {
-    if (doc.getElementById("ab-tour-css")) return;
-    var s = doc.createElement("style");
-    s.id = "ab-tour-css";
-    s.textContent =
-      "@keyframes ab-in{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}" +
-      "@keyframes ab-pulse{0%,100%{box-shadow:0 0 0 9999px rgba(15,15,16,.5),0 0 0 3px #4F46E5}50%{box-shadow:0 0 0 9999px rgba(15,15,16,.5),0 0 0 5px #818CF8}}" +
-      "#ab-hl{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(15,15,16,.5);z-index:9991;pointer-events:none;" +
-        "transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1),height .3s cubic-bezier(.4,0,.2,1);" +
-        "animation:ab-pulse 2s infinite}" +
-      "#ab-tip{position:fixed;background:#fff;border-radius:14px;padding:20px 22px 16px;width:300px;" +
-        "box-shadow:0 16px 48px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);z-index:9999;" +
-        "font-family:Inter,system-ui,sans-serif;transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1);" +
-        "animation:ab-in .2s cubic-bezier(.4,0,.2,1)}" +
-      /* стрелка */
-      "#ab-arrow{position:fixed;z-index:9998;pointer-events:none;transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1)}" +
-      "#ab-arrow::before{content:'';display:block;width:0;height:0}" +
-      "#ab-arrow.left::before{border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:10px solid #fff}" +
-      "#ab-arrow.right::before{border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:10px solid #fff}" +
-      "#ab-arrow.top::before{border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid #fff}" +
-      "#ab-arrow.bottom::before{border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #fff}" +
-      "#ab-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none}" +
-      "#ab-welcome-wrap{position:fixed;inset:0;background:rgba(15,15,16,.52);z-index:9995;display:flex;align-items:center;justify-content:center}" +
-      "#ab-welcome{background:#fff;border-radius:18px;padding:36px 36px 28px;width:430px;max-width:92vw;" +
-        "box-shadow:0 24px 64px rgba(0,0,0,.22);text-align:center;font-family:Inter,system-ui,sans-serif;" +
-        "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}" +
-      ".ab-p{background:#0F0F10;color:#fff;border:none;border-radius:9px;padding:10px 18px;" +
-        "font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}" +
-      ".ab-p:hover{background:#4F46E5}" +
-      ".ab-s{background:transparent;color:#4B5563;border:1px solid #E5E7EB;border-radius:8px;" +
-        "padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}" +
-      ".ab-s:hover{background:#F9FAFB;color:#0F0F10}" +
-      "#ab-toast{position:fixed;bottom:24px;right:24px;background:#0F0F10;color:#fff;" +
-        "border-radius:12px;padding:12px 18px;font-family:Inter,system-ui,sans-serif;font-size:13px;" +
-        "z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;align-items:center;gap:10px;" +
+  /* ── СТИЛИ ── */
+  function injectStyles(){
+    if(doc.getElementById("ab-css")) return;
+    var s=doc.createElement("style"); s.id="ab-css";
+    s.textContent=
+      "@keyframes ab-in{from{opacity:0;transform:translateY(4px) scale(.97)}to{opacity:1;transform:none}}"+
+      "@keyframes ab-ring{0%,100%{outline-color:#4F46E5}50%{outline-color:#818CF8}}"+
+      /* Overlay: затемнение без clip — highlight добавит outline поверх */
+      "#ab-ov{position:fixed;inset:0;background:rgba(15,15,16,.48);z-index:9980;pointer-events:none}"+
+      /* Highlight: прозрачный блок с outline, поверх overlay */
+      "#ab-hl{position:fixed;z-index:9985;pointer-events:none;border-radius:10px;"+
+        "outline:3px solid #4F46E5;outline-offset:4px;"+
+        "box-shadow:0 0 0 9999px rgba(15,15,16,.48);"+
+        "animation:ab-ring 2s ease-in-out infinite;"+
+        "transition:top .28s cubic-bezier(.4,0,.2,1),left .28s cubic-bezier(.4,0,.2,1),"+
+        "width .28s cubic-bezier(.4,0,.2,1),height .28s cubic-bezier(.4,0,.2,1)}"+
+      "#ab-tip{position:fixed;background:#fff;border-radius:14px;padding:20px 22px 16px;width:296px;"+
+        "box-shadow:0 16px 48px rgba(0,0,0,.2),0 2px 8px rgba(0,0,0,.08);z-index:9999;"+
+        "font-family:Inter,system-ui,sans-serif;"+
+        "transition:top .28s cubic-bezier(.4,0,.2,1),left .28s cubic-bezier(.4,0,.2,1);"+
+        "animation:ab-in .2s cubic-bezier(.4,0,.2,1)}"+
+      /* Стрелка-коннектор */
+      "#ab-arr{position:fixed;z-index:9998;pointer-events:none;"+
+        "transition:top .28s cubic-bezier(.4,0,.2,1),left .28s cubic-bezier(.4,0,.2,1)}"+
+      "#ab-arr.l::before,#ab-arr.r::before,#ab-arr.t::before,#ab-arr.b::before"+
+        "{content:'';position:absolute;width:0;height:0}"+
+      "#ab-arr.l::before{border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:11px solid #fff;top:-9px;left:0}"+
+      "#ab-arr.r::before{border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:11px solid #fff;top:-9px;left:0}"+
+      "#ab-arr.t::before{border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:11px solid #fff;top:0;left:-9px}"+
+      "#ab-arr.b::before{border-left:9px solid transparent;border-right:9px solid transparent;border-top:11px solid #fff;top:0;left:-9px}"+
+      "#ab-welcome-wrap{position:fixed;inset:0;background:rgba(15,15,16,.52);z-index:9995;display:flex;align-items:center;justify-content:center}"+
+      "#ab-welcome{background:#fff;border-radius:18px;padding:34px 34px 26px;width:428px;max-width:92vw;"+
+        "box-shadow:0 24px 64px rgba(0,0,0,.22);text-align:center;font-family:Inter,system-ui,sans-serif;"+
+        "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}"+
+      ".abp{background:#0F0F10;color:#fff;border:none;border-radius:9px;padding:9px 17px;"+
+        "font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .12s}"+
+      ".abp:hover{background:#4F46E5}"+
+      ".abs{background:transparent;color:#4B5563;border:1px solid #E5E7EB;border-radius:8px;"+
+        "padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit}"+
+      ".abs:hover{background:#F9FAFB;color:#0F0F10}"+
+      "#ab-toast{position:fixed;bottom:24px;right:24px;background:#0F0F10;color:#fff;"+
+        "border-radius:12px;padding:12px 18px;font-family:Inter,system-ui,sans-serif;font-size:13px;"+
+        "z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;align-items:center;gap:10px;"+
         "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}";
     doc.head.appendChild(s);
   }
 
-  /* ─── HIGHLIGHT ─── */
-  function posHL(el) {
-    if (!hl) return;
-    if (!el) { hl.style.display="none"; return; }
-    var r = el.getBoundingClientRect(), P = 7;
-    hl.style.display = "block";
-    hl.style.top    = (r.top  - P) + "px";
-    hl.style.left   = (r.left - P) + "px";
-    hl.style.width  = (r.width  + P*2) + "px";
-    hl.style.height = (r.height + P*2) + "px";
-  }
+  /* ── BOUNDING BOX по нескольким элементам ── */
+  function getBBox(anchors, groupAll){
+    var els=[], rects=[];
+    if(!anchors || !anchors.length) return null;
 
-  /* ─── TOOLTIP + СТРЕЛКА ─── */
-  function pips(cur, tot) {
-    var o = "<div style='display:flex;gap:4px;margin-bottom:14px'>";
-    for (var i=0;i<tot;i++) o += "<div style='height:3px;flex:1;border-radius:99px;background:"+(i<=cur?"#4F46E5":"#E5E7EB")+";transition:background .3s'></div>";
-    return o + "</div>";
-  }
-
-  function renderTip(idx) {
-    var s = STEPS[idx], tot = STEPS.length, isF=idx===0, isL=idx===tot-1;
-    tip.innerHTML =
-      "<span style='font-size:10px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:8px'>Шаг "+(idx+1)+" из "+tot+"</span>" +
-      "<div style='font-size:15px;font-weight:600;color:#0F0F10;letter-spacing:-.015em;margin-bottom:7px;line-height:1.3'>"+s.title+"</div>" +
-      "<div style='font-size:13px;color:#4B5563;line-height:1.6;margin-bottom:12px'>"+s.desc+"</div>" +
-      pips(idx,tot) +
-      "<div style='display:flex;align-items:center;gap:8px'>" +
-        (!isF ? "<button class='ab-s' id='ab-back'>← Назад</button>" : "") +
-        "<button class='ab-p' id='ab-next' style='flex:1'>"+(isL?"Готово ✓":"Далее →")+"</button>" +
-        (!isL ? "<button style='background:none;border:none;color:#9CA3AF;font-size:12px;cursor:pointer;font-family:inherit;padding:4px' id='ab-skip'>Пропустить</button>" : "") +
-      "</div>";
-
-    tip.querySelector("#ab-next").onclick = function(){ isL ? endTour(true) : goStep(idx+1); };
-    var b=tip.querySelector("#ab-back"); if(b) b.onclick=function(){ goStep(idx-1); };
-    var sk=tip.querySelector("#ab-skip"); if(sk) sk.onclick=function(){ endTour(false); };
-  }
-
-  function posTip(el, pos, arrowDir) {
-    var TW=300, PAD=16;
-    var VW=window.innerWidth, VH=window.innerHeight;
-    var top, left;
-
-    /* убираем старую стрелку */
-    arrow.className = "";
-    arrow.style.display = "none";
-
-    if (!el || pos==="center") {
-      top  = Math.round(VH/2 - 130);
-      left = Math.round(VW/2 - TW/2);
-      arrow.style.display = "none";
+    if(groupAll){
+      /* берём все совпадения каждого селектора */
+      anchors.forEach(function(sel){
+        doc.querySelectorAll(sel).forEach(function(el){ els.push(el); });
+      });
     } else {
-      var r = el.getBoundingClientRect();
-      var tipH = 220; /* приближение высоты */
+      /* берём первый из каждого */
+      anchors.forEach(function(sel){
+        var el=qs(sel); if(el) els.push(el);
+      });
+    }
+    if(!els.length) return null;
 
-      if (pos==="right") {
-        left = r.right + PAD;
-        top  = r.top + Math.round(r.height/2) - Math.round(tipH/2);
-        /* стрелка слева от тултипа, указывает влево на элемент */
-        arrow.className = "left";
-        arrow.style.display = "block";
-        arrow.style.left = (r.right + PAD - 11) + "px";
-        arrow.style.top  = (r.top + Math.round(r.height/2) - 8) + "px";
-      } else if (pos==="left") {
-        left = r.left - TW - PAD;
-        top  = r.top + Math.round(r.height/2) - Math.round(tipH/2);
-        arrow.className = "right";
-        arrow.style.display = "block";
-        arrow.style.left = (r.left - PAD + 1) + "px";
-        arrow.style.top  = (r.top + Math.round(r.height/2) - 8) + "px";
-      } else if (pos==="bottom") {
-        top  = r.bottom + PAD;
-        left = r.left + Math.round(r.width/2) - Math.round(TW/2);
-        arrow.className = "top";
-        arrow.style.display = "block";
-        arrow.style.left = (r.left + Math.round(r.width/2) - 8) + "px";
-        arrow.style.top  = (r.bottom + PAD - 11) + "px";
+    var minT=Infinity,minL=Infinity,maxB=-Infinity,maxR=-Infinity;
+    els.forEach(function(el){
+      var r=el.getBoundingClientRect();
+      if(r.width===0 && r.height===0) return; /* скрытые пропускаем */
+      if(r.top    < minT) minT=r.top;
+      if(r.left   < minL) minL=r.left;
+      if(r.bottom > maxB) maxB=r.bottom;
+      if(r.right  > maxR) maxR=r.right;
+    });
+    if(minT===Infinity) return null;
+    return {top:minT, left:minL, width:maxR-minL, height:maxB-minT,
+            right:maxR, bottom:maxB, cx:minL+(maxR-minL)/2, cy:minT+(maxB-minT)/2};
+  }
+
+  /* ── ПОЗИЦИОНИРОВАНИЕ HL ── */
+  function posHL(bbox){
+    if(!hl) return;
+    if(!bbox){ hl.style.display="none"; return; }
+    var P=6;
+    hl.style.display="block";
+    hl.style.top    =(bbox.top  -P)+"px";
+    hl.style.left   =(bbox.left -P)+"px";
+    hl.style.width  =(bbox.width+P*2)+"px";
+    hl.style.height =(bbox.height+P*2)+"px";
+  }
+
+  /* ── ПОЗИЦИОНИРОВАНИЕ ТУЛТИПА + СТРЕЛКИ ── */
+  function posTip(bbox, pos){
+    var TW=296, TH=230, PAD=18, VW=window.innerWidth, VH=window.innerHeight;
+    var top, left, aC="", aTop, aLeft;
+
+    arrowEl.className=""; arrowEl.style.display="none";
+
+    if(!bbox || pos==="center"){
+      top=Math.round(VH/2-TH/2); left=Math.round(VW/2-TW/2);
+    } else {
+      if(pos==="right"){
+        left=bbox.right+PAD; top=Math.round(bbox.cy-TH/2);
+        aC="l"; aLeft=bbox.right+PAD-12; aTop=Math.round(bbox.cy);
+      } else if(pos==="left"){
+        left=bbox.left-TW-PAD; top=Math.round(bbox.cy-TH/2);
+        aC="r"; aLeft=bbox.left-PAD+1; aTop=Math.round(bbox.cy);
+      } else if(pos==="bottom"){
+        top=bbox.bottom+PAD; left=Math.round(bbox.cx-TW/2);
+        aC="t"; aLeft=Math.round(bbox.cx); aTop=bbox.bottom+PAD-12;
       } else { /* top */
-        top  = r.top - tipH - PAD;
-        left = r.left + Math.round(r.width/2) - Math.round(TW/2);
-        arrow.className = "bottom";
-        arrow.style.display = "block";
-        arrow.style.left = (r.left + Math.round(r.width/2) - 8) + "px";
-        arrow.style.top  = (r.top - PAD + 1) + "px";
+        top=bbox.top-TH-PAD; left=Math.round(bbox.cx-TW/2);
+        aC="b"; aLeft=Math.round(bbox.cx); aTop=bbox.top-PAD+1;
+      }
+      top  =Math.max(8,Math.min(top,  VH-TH-8));
+      left =Math.max(8,Math.min(left, VW-TW-8));
+      if(aC){
+        arrowEl.className=aC; arrowEl.style.display="block";
+        arrowEl.style.top=aTop+"px"; arrowEl.style.left=aLeft+"px";
       }
     }
-
-    top  = Math.max(8, Math.min(top,  VH - 240 - 8));
-    left = Math.max(8, Math.min(left, VW - TW  - 8));
-    tip.style.top  = top  + "px";
-    tip.style.left = left + "px";
+    tip.style.top=top+"px"; tip.style.left=left+"px";
   }
 
-  /* ─── ПОИСК ЯКОРЯ ─── */
-  function findAnchor(s) {
-    if (!s.anchor) return null;
-    /* Для шагов про конкретные поля — ищем в основном контенте */
-    var el = qs(s.anchor);
-    return el || null;
+  /* ── ПРОГРЕСС-ТОЧКИ ── */
+  function pips(cur,tot){
+    var o="<div style='display:flex;gap:4px;margin-bottom:14px'>";
+    for(var i=0;i<tot;i++) o+="<div style='height:3px;flex:1;border-radius:99px;background:"+(i<=cur?"#4F46E5":"#E5E7EB")+";transition:background .3s'></div>";
+    return o+"</div>";
   }
 
-  /* ─── ШАГ ─── */
-  function goStep(idx) {
-    step = idx;
-    var s = STEPS[idx];
-    var el = findAnchor(s);
+  /* ── РЕНДЕР ТУЛТИПА ── */
+  function renderTip(idx){
+    var s=STEPS[idx],tot=STEPS.length,isF=idx===0,isL=idx===tot-1;
+    tip.innerHTML=
+      "<span style='font-size:10px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:8px'>Шаг "+(idx+1)+" из "+tot+"</span>"+
+      "<div style='font-size:15px;font-weight:600;color:#0F0F10;letter-spacing:-.015em;margin-bottom:7px;line-height:1.3'>"+s.title+"</div>"+
+      "<div style='font-size:13px;color:#4B5563;line-height:1.6;margin-bottom:12px'>"+s.desc+"</div>"+
+      pips(idx,tot)+
+      "<div style='display:flex;align-items:center;gap:8px'>"+
+        (!isF?"<button class='abs' id='ab-bk'>← Назад</button>":"")+
+        "<button class='abp' id='ab-nx' style='flex:1'>"+(isL?"Готово ✓":"Далее →")+"</button>"+
+        (!isL?"<button style='background:none;border:none;color:#9CA3AF;font-size:12px;cursor:pointer;font-family:inherit;padding:4px' id='ab-sk'>Пропустить</button>":"")+
+      "</div>";
+    tip.querySelector("#ab-nx").onclick=function(){ isL?endTour(true):goStep(idx+1); };
+    var bk=tip.querySelector("#ab-bk"); if(bk) bk.onclick=function(){ goStep(idx-1); };
+    var sk=tip.querySelector("#ab-sk"); if(sk) sk.onclick=function(){ endTour(false); };
+  }
 
-    /* удаляем старый тултип и создаём новый для анимации */
-    if (tip) { tip.style.animation="none"; tip.remove(); }
-    tip = doc.createElement("div"); tip.id="ab-tip";
-    doc.body.appendChild(tip);
+  /* ── ШАГ ── */
+  function goStep(idx){
+    curStep=idx;
+    var s=STEPS[idx];
+    var bbox=getBBox(s.anchors, s.groupAll);
 
+    /* Пересоздаём тултип для анимации */
+    if(tip){ tip.remove(); }
+    tip=doc.createElement("div"); tip.id="ab-tip"; doc.body.appendChild(tip);
     renderTip(idx);
-    /* позиционируем сразу, потом после reflow стрелку */
-    setTimeout(function() {
-      posTip(el, s.pos, s.arrow || "none");
-      posHL(el);
-    }, 10);
+
+    setTimeout(function(){
+      posHL(bbox);
+      posTip(bbox, s.pos);
+    },15);
   }
 
-  /* ─── СТАРТ / СТОП ─── */
-  function startTour() {
-    var w = doc.getElementById("ab-welcome-wrap"); if(w) w.remove();
-    if (!overlay) { overlay=doc.createElement("div"); overlay.id="ab-overlay"; doc.body.appendChild(overlay); }
-    if (!hl)      { hl=doc.createElement("div");      hl.id="ab-hl";           doc.body.appendChild(hl); }
-    if (!arrow)   { arrow=doc.createElement("div");   arrow.id="ab-arrow";     doc.body.appendChild(arrow); }
+  /* ── СТАРТ / КОНЕЦ ── */
+  function startTour(){
+    var w=doc.getElementById("ab-welcome-wrap"); if(w) w.remove();
+    if(!overlay){ overlay=doc.createElement("div"); overlay.id="ab-ov"; doc.body.appendChild(overlay); }
+    if(!hl)     { hl=doc.createElement("div");      hl.id="ab-hl";     doc.body.appendChild(hl); }
+    if(!arrowEl){ arrowEl=doc.createElement("div"); arrowEl.id="ab-arr"; doc.body.appendChild(arrowEl); }
     goStep(0);
   }
 
-  function endTour(done) {
-    ["ab-overlay","ab-hl","ab-tip","ab-arrow"].forEach(function(id){ var e=doc.getElementById(id); if(e)e.remove(); });
-    overlay=null; hl=null; tip=null; arrow=null;
-    if (done) { markDone(); showToast(); }
+  function endTour(done){
+    ["ab-ov","ab-hl","ab-tip","ab-arr"].forEach(function(id){ var e=doc.getElementById(id); if(e)e.remove(); });
+    overlay=null; hl=null; tip=null; arrowEl=null;
+    if(done){ markDone(); showToast(); }
   }
 
-  function showToast() {
+  function showToast(){
     var t=doc.createElement("div"); t.id="ab-toast";
-    t.innerHTML="<span style='font-size:16px'>✓</span><span>Тур завершён — приступайте!</span>" +
-      "<button onclick='this.parentNode.remove()' style='background:#ffffff22;border:none;color:#fff;" +
+    t.innerHTML="<span style='font-size:16px'>✓</span><span>Тур завершён — приступайте!</span>"+
+      "<button onclick='this.parentNode.remove()' style='background:#ffffff22;border:none;color:#fff;"+
       "border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;font-family:inherit;margin-left:4px'>×</button>";
     doc.body.appendChild(t);
-    setTimeout(function(){ if(t.parentNode) t.remove(); }, 5000);
+    setTimeout(function(){ if(t.parentNode)t.remove(); },5000);
   }
 
-  /* ─── WELCOME ─── */
-  function showWelcome() {
+  /* ── WELCOME ── */
+  function showWelcome(){
     var wrap=doc.createElement("div"); wrap.id="ab-welcome-wrap";
     wrap.innerHTML=
-      "<div id='ab-welcome'>" +
-      "<div style='width:52px;height:52px;background:#0F0F10;border-radius:14px;display:flex;align-items:center;" +
-        "justify-content:center;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;margin:0 auto 20px'>AB</div>" +
-      "<div style='font-size:20px;font-weight:600;color:#0F0F10;letter-spacing:-.02em;margin-bottom:10px'>Добро пожаловать в AB·AI</div>" +
-      "<div style='font-size:14px;color:#4B5563;line-height:1.65;margin-bottom:22px'>" +
-        "Платформа автоматизации A/B-тестирования с ИИ.<br>Пройдите короткий тур — он займёт меньше минуты.</div>" +
-      "<div style='text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:9px'>" +
+      "<div id='ab-welcome'>"+
+      "<div style='width:52px;height:52px;background:#0F0F10;border-radius:14px;display:flex;align-items:center;"+
+        "justify-content:center;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;margin:0 auto 20px'>AB</div>"+
+      "<div style='font-size:20px;font-weight:600;color:#0F0F10;letter-spacing:-.02em;margin-bottom:10px'>Добро пожаловать в AB·AI</div>"+
+      "<div style='font-size:14px;color:#4B5563;line-height:1.65;margin-bottom:22px'>"+
+        "Платформа автоматизации A/B-тестирования с ИИ.<br>Пройдите короткий тур — займёт меньше минуты.</div>"+
+      "<div style='text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:9px'>"+
       ["Генерируй гипотезы — LLM предложит идеи за секунды",
        "Рассчитай выборку — без формул и таблиц",
        "Запусти адаптивный трафик с Thompson Sampling",
        "Получи бизнес-отчёт одним кликом"]
       .map(function(f){
-        return "<div style='display:flex;align-items:center;gap:10px;font-size:13px;color:#4B5563'>" +
+        return "<div style='display:flex;align-items:center;gap:10px;font-size:13px;color:#4B5563'>"+
           "<div style='width:6px;height:6px;border-radius:50%;background:#4F46E5;flex-shrink:0'></div>"+f+"</div>";
-      }).join("") +
-      "</div>" +
-      "<button class='ab-p' id='ab-go' style='width:100%;padding:12px 20px;font-size:14px;margin-bottom:10px'>Начать тур →</button>" +
-      "<div><button style='background:none;border:none;color:#9CA3AF;font-size:13px;cursor:pointer;font-family:inherit' " +
+      }).join("")+
+      "</div>"+
+      "<button class='abp' id='ab-go' style='width:100%;padding:12px 20px;font-size:14px;margin-bottom:10px'>Начать тур →</button>"+
+      "<div><button style='background:none;border:none;color:#9CA3AF;font-size:13px;cursor:pointer;font-family:inherit' "+
         "id='ab-no'>Пропустить, разберусь сам</button></div></div>";
     doc.body.appendChild(wrap);
-    doc.getElementById("ab-go").onclick = function(){ wrap.remove(); startTour(); };
-    doc.getElementById("ab-no").onclick  = function(){ wrap.remove(); markDone(); };
+    doc.getElementById("ab-go").onclick=function(){ wrap.remove(); startTour(); };
+    doc.getElementById("ab-no").onclick=function(){ wrap.remove(); markDone(); };
   }
 
-  /* ─── КНОПКА ПЕРЕЗАПУСКА ─── */
-  function bindRestart() {
-    var obs = new MutationObserver(function() {
-      doc.querySelectorAll("[data-testid='stSidebar'] button").forEach(function(btn) {
-        if (btn.textContent.trim().includes("Показать тур") && !btn._ab) {
-          btn._ab = true;
-          btn.addEventListener("click", function(e) {
+  /* ── КНОПКА ПЕРЕЗАПУСКА ── */
+  function bindRestart(){
+    var obs=new MutationObserver(function(){
+      doc.querySelectorAll("[data-testid='stSidebar'] button").forEach(function(btn){
+        if(btn.textContent.trim().includes("Показать тур") && !btn._ab){
+          btn._ab=true;
+          btn.addEventListener("click",function(e){
             e.stopPropagation();
-            ["ab-overlay","ab-hl","ab-tip","ab-arrow","ab-welcome-wrap"].forEach(function(id){
-              var el=doc.getElementById(id); if(el) el.remove();
+            ["ab-ov","ab-hl","ab-tip","ab-arr","ab-welcome-wrap"].forEach(function(id){
+              var el=doc.getElementById(id); if(el)el.remove();
             });
-            overlay=null; hl=null; tip=null; arrow=null;
-            injectStyles();
-            startTour();
+            overlay=null; hl=null; tip=null; arrowEl=null;
+            injectStyles(); startTour();
           });
         }
       });
     });
-    obs.observe(doc.body, { childList:true, subtree:true });
+    obs.observe(doc.body,{childList:true,subtree:true});
   }
 
   injectStyles();
   bindRestart();
-  if (!isDone()) { setTimeout(showWelcome, 1000); }
+  if(!isDone()){ setTimeout(showWelcome,1000); }
 })();
 </script>
 </body>
