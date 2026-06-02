@@ -126,6 +126,8 @@ st.markdown("""
 
 #MainMenu,footer,header{visibility:hidden}
 *{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif !important;-webkit-font-smoothing:antialiased}
+/* Material-иконки НЕ должны наследовать Inter, иначе вместо глифа печатается имя лигатуры (keyboard_double_arrow_left) */
+[data-testid="stIconMaterial"],span[data-testid="stIconMaterial"],.material-icons,.material-symbols-outlined,.material-symbols-rounded,[data-testid="stSidebarCollapseButton"] span,[data-testid="stExpandSidebarButton"] span,[data-testid="collapsedControl"] span{font-family:'Material Symbols Rounded','Material Symbols Outlined','Material Icons' !important}
 .block-container{padding-top:1.75rem !important;padding-bottom:3rem !important;max-width:1160px !important}
 .stApp,.stApp>div,.main{background:#ffffff !important}
 
@@ -165,16 +167,19 @@ p{font-size:14px !important;color:#4B5563 !important;line-height:1.6 !important}
 .stButton>button{background:#4F46E5 !important;color:#fff !important;border:none !important;border-radius:10px !important;font-size:14px !important;font-weight:500 !important;padding:0.6rem 1.5rem !important;box-shadow:0 1px 2px rgba(79,70,229,.12),0 4px 12px rgba(79,70,229,.18) !important;transition:all .15s !important}
 .stButton>button:hover{background:#4338CA !important;transform:translateY(-1px) !important;box-shadow:0 2px 6px rgba(79,70,229,.2),0 8px 24px rgba(79,70,229,.3) !important}
 .stButton>button:active{transform:translateY(0) !important}
+/* Подпись кнопки Streamlit оборачивает в <p>/<div> — глобальный p{color} делал её серой. Форсируем белый. */
+.stButton>button p,.stButton>button div,.stButton>button span,.stButton>button *{color:#fff !important}
 [data-testid="stSidebar"] .stButton>button{background:#27272A !important;color:#E4E4E7 !important;border:1px solid #3F3F46 !important;box-shadow:none !important;font-size:12px !important;padding:0.45rem 1rem !important}
 [data-testid="stSidebar"] .stButton>button:hover{background:#3730A3 !important;color:#fff !important;border-color:#4F46E5 !important;transform:none !important;box-shadow:none !important}
 
-/* ── ШАГОВЫЕ КНОПКИ +/− у number_input (делаем светлыми) ── */
+/* ── ШАГОВЫЕ КНОПКИ +/− у number_input (мягкий серый, не белый) ── */
 [data-testid="stNumberInput"] button,
 [data-testid="stNumberInputStepUp"],[data-testid="stNumberInputStepDown"]{
-    background:#fff !important;color:#6B7280 !important;border:1px solid #E5E7EB !important;box-shadow:none !important}
+    background:#F3F4F6 !important;color:#374151 !important;border:1px solid #E5E7EB !important;box-shadow:none !important}
 [data-testid="stNumberInput"] button:hover,
 [data-testid="stNumberInputStepUp"]:hover,[data-testid="stNumberInputStepDown"]:hover{
-    background:#F3F4F6 !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
+    background:#E5E7EB !important;color:#4F46E5 !important;border-color:#C7D2FE !important;transform:none !important}
+[data-testid="stNumberInput"] button p,[data-testid="stNumberInput"] button span{color:inherit !important}
 [data-testid="stNumberInput"] button svg{fill:currentColor !important;color:inherit !important}
 
 /* ── ИНПУТЫ ── */
@@ -247,22 +252,22 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
      sel:[],pos:"center"},
     {title:"Меню разделов",
      desc:"Четыре раздела — полный цикл теста: Гипотезы → Планирование → Симуляция → Отчёт. Переключай их здесь.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"right"},
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio']"],pos:"right",nav:"Гипотезы"},
     {title:"Заполни контекст продукта",
      desc:"Введи название экрана, выбери метрику и опиши проблемную зону. Чем точнее — тем сильнее гипотезы от LLM.",
-     sel:["section.main [data-testid='stColumn']:first-child","[data-testid='stSidebar'] ~ section [data-testid='column']:first-child"],pos:"right",group:true},
+     sel:["section.main [data-testid='stColumn']:first-child","[data-testid='stSidebar'] ~ section [data-testid='column']:first-child"],pos:"right",group:true,nav:"Гипотезы"},
     {title:"Нажми «Сгенерировать гипотезы»",
      desc:"Нажми эту кнопку после заполнения формы. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и уверенностью.",
-     sel:["section.main .stButton button","[data-testid='stSidebar'] ~ section .stButton button"],pos:"top"},
+     sel:["section.main .stButton button","[data-testid='stSidebar'] ~ section .stButton button"],pos:"top",nav:"Гипотезы"},
     {title:"Раздел «Планирование»",
      desc:"Здесь передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно и сколько дней займёт тест.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2)"],pos:"right"},
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(2)"],pos:"right",nav:"Планирование"},
     {title:"Раздел «Симуляция»",
      desc:"Задай конверсии A и B, нажми ▶. Увидишь, как Thompson Sampling экономит трафик по сравнению с обычным A/B 50/50.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(3)"],pos:"right"},
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(3)"],pos:"right",nav:"Симуляция"},
     {title:"Раздел «Отчёт»",
      desc:"Введи числа контроля и варианта B, нажми «Рассчитать». LLM напишет резюме и скажет: внедрять изменение или нет.",
-     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(4)"],pos:"right"}
+     sel:["[data-testid='stSidebar'] [data-testid='stRadio'] [data-baseweb='radio']:nth-child(4)"],pos:"right",nav:"Отчёт"}
   ];
 
   var LS = "abai_v6";
@@ -341,15 +346,26 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     return {t:mt,l:ml,b:mb,r:mr,w:mr-ml,h:mb-mt,cx:ml+(mr-ml)/2,cy:mt+(mb-mt)/2};
   }
 
+  /* ─ Гарантируем, что узлы подсветки живы (Streamlit rerun мог их снести) ─ */
+  function ensureNodes(){
+    if(!doc.getElementById("ab-dt")) makeDim();
+    else { dimT=doc.getElementById("ab-dt"); dimR=doc.getElementById("ab-dr"); dimB=doc.getElementById("ab-db"); dimL=doc.getElementById("ab-dl"); }
+    if(!doc.getElementById("ab-hl")){ hlBox=doc.createElement("div"); hlBox.id="ab-hl"; doc.body.appendChild(hlBox); }
+    else hlBox=doc.getElementById("ab-hl");
+    if(!doc.getElementById("ab-arw")){ arw=doc.createElement("div"); arw.id="ab-arw"; doc.body.appendChild(arw); }
+    else arw=doc.getElementById("ab-arw");
+  }
+
   /* ─ POSITION HIGHLIGHT + DIM ─ */
   function setHL(bb){
+    ensureNodes();
     if(!bb){
       if(hlBox){hlBox.style.display="none";}
       if(dimT){dimT.style.display="none";dimR.style.display="none";dimB.style.display="none";dimL.style.display="none";}
       return;
     }
-    var P=7, VW=P.innerWidth||doc.documentElement.clientWidth, VH=P.innerHeight||doc.documentElement.clientHeight;
-    var t=bb.t-P, l=bb.l-P, w=bb.w+P*2, h=bb.h+P*2;
+    var PD=7, VW=P.innerWidth||doc.documentElement.clientWidth, VH=P.innerHeight||doc.documentElement.clientHeight;
+    var t=bb.t-PD, l=bb.l-PD, w=bb.w+PD*2, h=bb.h+PD*2;
     /* Highlight box */
     hlBox.style.display="block"; hlBox.style.top=t+"px"; hlBox.style.left=l+"px"; hlBox.style.width=w+"px"; hlBox.style.height=h+"px";
     /* Dim: top */
@@ -397,7 +413,10 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
       }
       /* Жёсткий зажим в границы экрана по обеим осям */
       t=Math.max(EDGE,Math.min(t,VH-TH-EDGE));
-      l=Math.max(EDGE,Math.min(l,VW-TW-EDGE));
+      var lMin=EDGE;
+      /* для right карточка не должна заезжать обратно на подсвеченный элемент/сайдбар */
+      if(pos==="right") lMin=Math.max(EDGE, bb.r+PAD);
+      l=Math.max(lMin,Math.min(l,VW-TW-EDGE));
       if(ac){ arw.className=ac; arw.style.display="block"; }
     }
     tip.style.top=t+"px"; tip.style.left=l+"px";
@@ -428,15 +447,34 @@ ONBOARDING_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8"></head>
     var sk=tip.querySelector("#ab-sk"); if(sk) sk.onclick=function(){endTour(false);};
   }
 
+  /* ─ Переключить раздел приложения (клик по нужному radio) ─ */
+  function clickNav(label){
+    var lbls=doc.querySelectorAll("[data-testid='stSidebar'] [data-testid='stRadio'] label");
+    for(var i=0;i<lbls.length;i++){
+      if(lbls[i].textContent.trim()===label){
+        var inp=lbls[i].querySelector("input");
+        if(inp && !inp.checked){ lbls[i].click(); return true; }
+        return false; /* уже выбран — rerun не будет */
+      }
+    }
+    return false;
+  }
+
   /* ─ GO STEP ─ */
   function go(idx){
     cur=idx;
     var s=STEPS[idx];
-    var bb = s.sel.length ? bbox(s.sel, s.group) : null;
+    /* Если шаг привязан к разделу — переключаем приложение на него */
+    var switched = s.nav ? clickNav(s.nav) : false;
     if(tip){tip.remove();}
     tip=doc.createElement("div"); tip.id="ab-tip"; doc.body.appendChild(tip);
     render(idx);
-    setTimeout(function(){ setHL(bb); setTip(bb,s.pos); },20);
+    /* После клика Streamlit перерисовывает DOM — ждём дольше и измеряем заново */
+    var delay = switched ? 450 : 30;
+    setTimeout(function(){
+      var bb = s.sel.length ? bbox(s.sel, s.group) : null;
+      setHL(bb); setTip(bb,s.pos);
+    }, delay);
   }
 
   /* ─ START / END ─ */
