@@ -298,8 +298,10 @@ st.markdown("""
 [data-testid="stSidebar"] .stMarkdown em { color: #9CA3AF !important; font-size: 11px !important; }
 [data-testid="stSidebar"] hr { border-color: #E5E7EB !important; margin: 12px 0 !important; }
 
-/* Навигация — Radio без лишних элементов */
-[data-testid="stSidebar"] [data-testid="stRadio"] > div > label { display: none !important; }
+/* Навигация — Radio */
+/* Скрываем только строку-заголовок группы (первый div > label до options) */
+[data-testid="stSidebar"] [data-testid="stRadio"] > div > div:first-child > label { display: none !important; }
+/* Каждый пункт меню */
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     background: transparent !important; border: none !important;
     border-radius: 8px !important; padding: 9px 14px !important;
@@ -316,7 +318,34 @@ st.markdown("""
     background: #EEF2FF !important; color: #4F46E5 !important; font-weight: 500 !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] p { color: inherit !important; font-size: inherit !important; }
+/* Скрываем радиокружки, оставляем текст */
 [data-testid="stSidebar"] [data-baseweb="radio"] { display: none !important; }
+/* Индикатор активной страницы — левая полоска */
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked)::before {
+    content: '' !important;
+    width: 3px !important; height: 14px !important;
+    background: #4F46E5 !important;
+    border-radius: 2px !important;
+    flex-shrink: 0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label::before {
+    content: '' !important;
+    width: 3px !important; height: 14px !important;
+    background: transparent !important;
+    border-radius: 2px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Заголовок группы "// навигация" — маленький uppercase */
+[data-testid="stSidebar"] [data-testid="stRadio"] > div > p {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    color: #9CA3AF !important;
+    text-transform: uppercase !important;
+    letter-spacing: .08em !important;
+    padding: 4px 14px 4px !important;
+    margin-bottom: 2px !important;
+}
 
 /* ── ТИПОГРАФИКА ── */
 h1 { font-size: 22px !important; font-weight: 600 !important; color: #0F0F10 !important;
@@ -494,236 +523,310 @@ ONBOARDING_HTML = """
 (function() {
   var doc = window.parent.document;
 
+  /* ─────────────────────────────────────────────────────────────
+     ШАГИ ТУРА
+     anchor   — CSS-селектор элемента, которого касается подсказка
+     pos      — сторона, с которой появится тултип: right/left/bottom/top/center
+     arrow    — сторона стрелки на тултипе (указывает НА элемент): left/right/top/bottom/none
+     Для каждой страницы используются разные селекторы.
+  ───────────────────────────────────────────────────────────────── */
   var STEPS = [
     {
       title: "Добро пожаловать в AB·AI",
-      desc: "Платформа автоматизации A/B-тестирования с ИИ. Быстрый тур по 4 модулям займёт ~1 минуту.",
+      desc: "Это полный цикл A/B-тестирования с ИИ. Тур покажет каждый экран и объяснит, что делать — за 1 минуту.",
       anchor: null,
-      pos: "center"
+      pos: "center",
+      arrow: "none"
     },
     {
-      title: "Навигация по модулям",
-      desc: "Четыре раздела образуют полный цикл: Гипотезы → Планирование → Симуляция → Отчёт.",
-      anchor: "[data-testid='stSidebar']",
-      pos: "right"
+      title: "Меню разделов",
+      desc: "Переключайся между разделами отсюда. Начни с «Гипотезы», затем «Планирование», «Симуляция», «Отчёт» — это полный pipeline теста.",
+      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
+      pos: "right",
+      arrow: "left"
     },
     {
-      title: "Генерация гипотез с LLM",
-      desc: "Укажи продукт и проблемную зону — языковая модель предложит конкретные тестируемые изменения.",
-      anchor: "[data-testid='stSidebar']",
-      pos: "right"
+      title: "Заполни контекст продукта",
+      desc: "Введи название экрана, выбери метрику и опиши, что именно ты хочешь улучшить. Чем точнее — тем лучше гипотезы от LLM.",
+      anchor: ".stTextInput:first-of-type",
+      pos: "right",
+      arrow: "left"
     },
     {
-      title: "Расчёт выборки",
-      desc: "Авторасчёт минимальной выборки по заданным α, β и MDE — без ручных формул.",
-      anchor: "[data-testid='stSidebar']",
-      pos: "right"
+      title: "Нажми «Сгенерировать»",
+      desc: "После заполнения формы нажми эту кнопку. LLM вернёт 2–7 конкретных гипотез с ожидаемым эффектом и оценкой уверенности.",
+      anchor: "[data-testid='stSidebar'] ~ div button:not([kind='secondaryFormSubmit'])",
+      pos: "bottom",
+      arrow: "top",
+      sbSelector: ".stButton button"
     },
     {
-      title: "Thompson Sampling",
-      desc: "Адаптивный алгоритм перераспределяет трафик в пользу лучшего варианта, снижая regret до 78%.",
-      anchor: "[data-testid='stSidebar']",
-      pos: "right"
+      title: "Рассчитай нужный объём",
+      desc: "В разделе «Планирование» передвинь ползунок MDE — система мгновенно покажет, сколько пользователей нужно собрать и сколько дней займёт тест.",
+      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
+      pos: "right",
+      arrow: "left"
     },
     {
-      title: "Анализ и LLM-отчёт",
-      desc: "Система считает p-value, Cohen's d, 95% ДИ и генерирует текстовое бизнес-резюме на русском.",
-      anchor: "[data-testid='stSidebar']",
-      pos: "right"
+      title: "Запусти симуляцию трафика",
+      desc: "В разделе «Симуляция» задай конверсии вариантов и нажми ▶. Увидишь, насколько Thompson Sampling экономит трафик по сравнению с обычным A/B.",
+      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
+      pos: "right",
+      arrow: "left"
+    },
+    {
+      title: "Загрузи результаты — получи отчёт",
+      desc: "В разделе «Отчёт» введи числа контрольной и тестовой групп, нажми «Рассчитать». LLM напишет бизнес-резюме и скажет, стоит ли внедрять изменение.",
+      anchor: "[data-testid='stSidebar'] [data-testid='stRadio']",
+      pos: "right",
+      arrow: "left"
     }
   ];
 
-  var LS_KEY = "abai_tour_v3";
+  var LS_KEY = "abai_tour_v4";
   var step = 0;
-  var overlay, hl, tip;
+  var overlay, hl, tip, arrow;
 
   function isDone() { try { return !!localStorage.getItem(LS_KEY); } catch(e) { return false; } }
   function markDone() { try { localStorage.setItem(LS_KEY, "1"); } catch(e) {} }
+  function qs(sel) { return doc.querySelector(sel); }
+  function qsAll(sel) { return doc.querySelectorAll(sel); }
 
+  /* ─── СТИЛИ ─── */
   function injectStyles() {
-    if (doc.getElementById("ab-tour-styles")) return;
+    if (doc.getElementById("ab-tour-css")) return;
     var s = doc.createElement("style");
-    s.id = "ab-tour-styles";
-    s.textContent = [
-      "@keyframes ab-in{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}",
-      "#ab-hl{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(15,15,16,.52);z-index:9991;pointer-events:none;transition:all .3s cubic-bezier(.4,0,.2,1)}",
-      "#ab-tip{position:fixed;background:#fff;border-radius:14px;padding:22px 24px 18px;width:312px;",
-      "box-shadow:0 12px 40px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);z-index:9999;",
-      "font-family:Inter,system-ui,sans-serif;animation:ab-in .25s cubic-bezier(.4,0,.2,1)}",
-      "#ab-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none}",
-      "#ab-welcome-wrap{position:fixed;inset:0;background:rgba(15,15,16,.52);z-index:9995;",
-      "display:flex;align-items:center;justify-content:center}",
-      "#ab-welcome{background:#fff;border-radius:18px;padding:36px 36px 28px;width:420px;max-width:90vw;",
-      "box-shadow:0 24px 64px rgba(0,0,0,.22);text-align:center;font-family:Inter,system-ui,sans-serif;",
-      "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}",
-      ".ab-btn-p{background:#0F0F10;color:#fff;border:none;border-radius:9px;padding:10px 18px;",
-      "font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}",
-      ".ab-btn-p:hover{background:#4F46E5}",
-      ".ab-btn-s{background:transparent;color:#4B5563;border:1px solid #E5E7EB;border-radius:8px;",
-      "padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}",
-      ".ab-btn-s:hover{background:#F9FAFB;color:#0F0F10}",
-      "#ab-done-toast{position:fixed;bottom:24px;right:24px;background:#0F0F10;color:#fff;",
-      "border-radius:12px;padding:13px 18px;font-family:Inter,system-ui,sans-serif;font-size:13px;",
-      "z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;align-items:center;gap:10px;",
-      "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}"
-    ].join("");
+    s.id = "ab-tour-css";
+    s.textContent =
+      "@keyframes ab-in{from{opacity:0;transform:translateY(5px) scale(.97)}to{opacity:1;transform:none}}" +
+      "@keyframes ab-pulse{0%,100%{box-shadow:0 0 0 9999px rgba(15,15,16,.5),0 0 0 3px #4F46E5}50%{box-shadow:0 0 0 9999px rgba(15,15,16,.5),0 0 0 5px #818CF8}}" +
+      "#ab-hl{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(15,15,16,.5);z-index:9991;pointer-events:none;" +
+        "transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1),height .3s cubic-bezier(.4,0,.2,1);" +
+        "animation:ab-pulse 2s infinite}" +
+      "#ab-tip{position:fixed;background:#fff;border-radius:14px;padding:20px 22px 16px;width:300px;" +
+        "box-shadow:0 16px 48px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);z-index:9999;" +
+        "font-family:Inter,system-ui,sans-serif;transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1);" +
+        "animation:ab-in .2s cubic-bezier(.4,0,.2,1)}" +
+      /* стрелка */
+      "#ab-arrow{position:fixed;z-index:9998;pointer-events:none;transition:top .3s cubic-bezier(.4,0,.2,1),left .3s cubic-bezier(.4,0,.2,1)}" +
+      "#ab-arrow::before{content:'';display:block;width:0;height:0}" +
+      "#ab-arrow.left::before{border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:10px solid #fff}" +
+      "#ab-arrow.right::before{border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:10px solid #fff}" +
+      "#ab-arrow.top::before{border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid #fff}" +
+      "#ab-arrow.bottom::before{border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #fff}" +
+      "#ab-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none}" +
+      "#ab-welcome-wrap{position:fixed;inset:0;background:rgba(15,15,16,.52);z-index:9995;display:flex;align-items:center;justify-content:center}" +
+      "#ab-welcome{background:#fff;border-radius:18px;padding:36px 36px 28px;width:430px;max-width:92vw;" +
+        "box-shadow:0 24px 64px rgba(0,0,0,.22);text-align:center;font-family:Inter,system-ui,sans-serif;" +
+        "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}" +
+      ".ab-p{background:#0F0F10;color:#fff;border:none;border-radius:9px;padding:10px 18px;" +
+        "font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s}" +
+      ".ab-p:hover{background:#4F46E5}" +
+      ".ab-s{background:transparent;color:#4B5563;border:1px solid #E5E7EB;border-radius:8px;" +
+        "padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}" +
+      ".ab-s:hover{background:#F9FAFB;color:#0F0F10}" +
+      "#ab-toast{position:fixed;bottom:24px;right:24px;background:#0F0F10;color:#fff;" +
+        "border-radius:12px;padding:12px 18px;font-family:Inter,system-ui,sans-serif;font-size:13px;" +
+        "z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;align-items:center;gap:10px;" +
+        "animation:ab-in .3s cubic-bezier(.4,0,.2,1)}";
     doc.head.appendChild(s);
   }
 
-  function qs(sel) { return doc.querySelector(sel); }
-
-  function createTip() {
-    tip = doc.createElement("div");
-    tip.id = "ab-tip";
-    doc.body.appendChild(tip);
+  /* ─── HIGHLIGHT ─── */
+  function posHL(el) {
+    if (!hl) return;
+    if (!el) { hl.style.display="none"; return; }
+    var r = el.getBoundingClientRect(), P = 7;
+    hl.style.display = "block";
+    hl.style.top    = (r.top  - P) + "px";
+    hl.style.left   = (r.left - P) + "px";
+    hl.style.width  = (r.width  + P*2) + "px";
+    hl.style.height = (r.height + P*2) + "px";
   }
 
-  function pips(current, total) {
-    var out = "<div style='display:flex;gap:4px;margin-bottom:14px'>";
-    for (var i=0; i<total; i++) {
-      out += "<div style='height:3px;flex:1;border-radius:99px;background:" + (i<=current?"#4F46E5":"#E5E7EB") + ";transition:background .3s'></div>";
-    }
-    return out + "</div>";
+  /* ─── TOOLTIP + СТРЕЛКА ─── */
+  function pips(cur, tot) {
+    var o = "<div style='display:flex;gap:4px;margin-bottom:14px'>";
+    for (var i=0;i<tot;i++) o += "<div style='height:3px;flex:1;border-radius:99px;background:"+(i<=cur?"#4F46E5":"#E5E7EB")+";transition:background .3s'></div>";
+    return o + "</div>";
   }
 
   function renderTip(idx) {
-    var s = STEPS[idx], total = STEPS.length;
-    var isFirst = idx===0, isLast = idx===total-1;
+    var s = STEPS[idx], tot = STEPS.length, isF=idx===0, isL=idx===tot-1;
     tip.innerHTML =
-      "<span style='font-size:10px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:8px'>Шаг "+(idx+1)+" из "+total+"</span>" +
-      "<div style='font-size:15px;font-weight:600;color:#0F0F10;letter-spacing:-.015em;margin-bottom:8px;line-height:1.3'>"+s.title+"</div>" +
+      "<span style='font-size:10px;font-weight:600;color:#4F46E5;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:8px'>Шаг "+(idx+1)+" из "+tot+"</span>" +
+      "<div style='font-size:15px;font-weight:600;color:#0F0F10;letter-spacing:-.015em;margin-bottom:7px;line-height:1.3'>"+s.title+"</div>" +
       "<div style='font-size:13px;color:#4B5563;line-height:1.6;margin-bottom:12px'>"+s.desc+"</div>" +
-      pips(idx, total) +
+      pips(idx,tot) +
       "<div style='display:flex;align-items:center;gap:8px'>" +
-        (!isFirst ? "<button class='ab-btn-s' id='ab-back'>← Назад</button>" : "") +
-        "<button class='ab-btn-p' id='ab-next' style='flex:1'>"+(isLast?"Готово ✓":"Далее →")+"</button>" +
-        (!isLast ? "<button style='background:none;border:none;color:#9CA3AF;font-size:12px;cursor:pointer;font-family:inherit;padding:4px' id='ab-skip'>Пропустить</button>" : "") +
+        (!isF ? "<button class='ab-s' id='ab-back'>← Назад</button>" : "") +
+        "<button class='ab-p' id='ab-next' style='flex:1'>"+(isL?"Готово ✓":"Далее →")+"</button>" +
+        (!isL ? "<button style='background:none;border:none;color:#9CA3AF;font-size:12px;cursor:pointer;font-family:inherit;padding:4px' id='ab-skip'>Пропустить</button>" : "") +
       "</div>";
 
-    tip.querySelector("#ab-next").onclick = function() { isLast ? endTour(true) : goStep(idx+1); };
-    var b = tip.querySelector("#ab-back");
-    if (b) b.onclick = function() { goStep(idx-1); };
-    var sk = tip.querySelector("#ab-skip");
-    if (sk) sk.onclick = function() { endTour(false); };
+    tip.querySelector("#ab-next").onclick = function(){ isL ? endTour(true) : goStep(idx+1); };
+    var b=tip.querySelector("#ab-back"); if(b) b.onclick=function(){ goStep(idx-1); };
+    var sk=tip.querySelector("#ab-skip"); if(sk) sk.onclick=function(){ endTour(false); };
   }
 
-  function posTip(anch, pos) {
-    var TW=312, TH=220, PAD=14;
+  function posTip(el, pos, arrowDir) {
+    var TW=300, PAD=16;
     var VW=window.innerWidth, VH=window.innerHeight;
     var top, left;
-    if (!anch || pos==="center") {
-      top = Math.round(VH/2-TH/2); left = Math.round(VW/2-TW/2);
+
+    /* убираем старую стрелку */
+    arrow.className = "";
+    arrow.style.display = "none";
+
+    if (!el || pos==="center") {
+      top  = Math.round(VH/2 - 130);
+      left = Math.round(VW/2 - TW/2);
+      arrow.style.display = "none";
     } else {
-      var r = anch.getBoundingClientRect();
-      if (pos==="right")  { top=r.top; left=r.right+PAD; }
-      else if (pos==="left") { top=r.top; left=r.left-TW-PAD; }
-      else if (pos==="bottom") { top=r.bottom+PAD; left=r.left; }
-      else { top=r.top-TH-PAD; left=r.left; }
+      var r = el.getBoundingClientRect();
+      var tipH = 220; /* приближение высоты */
+
+      if (pos==="right") {
+        left = r.right + PAD;
+        top  = r.top + Math.round(r.height/2) - Math.round(tipH/2);
+        /* стрелка слева от тултипа, указывает влево на элемент */
+        arrow.className = "left";
+        arrow.style.display = "block";
+        arrow.style.left = (r.right + PAD - 11) + "px";
+        arrow.style.top  = (r.top + Math.round(r.height/2) - 8) + "px";
+      } else if (pos==="left") {
+        left = r.left - TW - PAD;
+        top  = r.top + Math.round(r.height/2) - Math.round(tipH/2);
+        arrow.className = "right";
+        arrow.style.display = "block";
+        arrow.style.left = (r.left - PAD + 1) + "px";
+        arrow.style.top  = (r.top + Math.round(r.height/2) - 8) + "px";
+      } else if (pos==="bottom") {
+        top  = r.bottom + PAD;
+        left = r.left + Math.round(r.width/2) - Math.round(TW/2);
+        arrow.className = "top";
+        arrow.style.display = "block";
+        arrow.style.left = (r.left + Math.round(r.width/2) - 8) + "px";
+        arrow.style.top  = (r.bottom + PAD - 11) + "px";
+      } else { /* top */
+        top  = r.top - tipH - PAD;
+        left = r.left + Math.round(r.width/2) - Math.round(TW/2);
+        arrow.className = "bottom";
+        arrow.style.display = "block";
+        arrow.style.left = (r.left + Math.round(r.width/2) - 8) + "px";
+        arrow.style.top  = (r.top - PAD + 1) + "px";
+      }
     }
-    top  = Math.max(8, Math.min(top,  window.innerHeight-TH-8));
-    left = Math.max(8, Math.min(left, window.innerWidth-TW-8));
-    tip.style.top=top+"px"; tip.style.left=left+"px";
+
+    top  = Math.max(8, Math.min(top,  VH - 240 - 8));
+    left = Math.max(8, Math.min(left, VW - TW  - 8));
+    tip.style.top  = top  + "px";
+    tip.style.left = left + "px";
   }
 
-  function posHL(anch) {
-    if (!hl) return;
-    if (!anch) { hl.style.display="none"; return; }
-    var r=anch.getBoundingClientRect(), P=8;
-    hl.style.display="block";
-    hl.style.top=(r.top-P)+"px"; hl.style.left=(r.left-P)+"px";
-    hl.style.width=(r.width+P*2)+"px"; hl.style.height=(r.height+P*2)+"px";
+  /* ─── ПОИСК ЯКОРЯ ─── */
+  function findAnchor(s) {
+    if (!s.anchor) return null;
+    /* Для шагов про конкретные поля — ищем в основном контенте */
+    var el = qs(s.anchor);
+    return el || null;
   }
 
+  /* ─── ШАГ ─── */
   function goStep(idx) {
     step = idx;
     var s = STEPS[idx];
-    var anch = s.anchor ? qs(s.anchor) : null;
-    if (tip) { tip.remove(); }
-    createTip();
+    var el = findAnchor(s);
+
+    /* удаляем старый тултип и создаём новый для анимации */
+    if (tip) { tip.style.animation="none"; tip.remove(); }
+    tip = doc.createElement("div"); tip.id="ab-tip";
+    doc.body.appendChild(tip);
+
     renderTip(idx);
-    posTip(anch, s.pos);
-    posHL(anch);
+    /* позиционируем сразу, потом после reflow стрелку */
+    setTimeout(function() {
+      posTip(el, s.pos, s.arrow || "none");
+      posHL(el);
+    }, 10);
   }
 
+  /* ─── СТАРТ / СТОП ─── */
   function startTour() {
-    // убираем welcome если есть
-    var w = doc.getElementById("ab-welcome-wrap");
-    if (w) w.remove();
-
-    overlay = doc.createElement("div"); overlay.id="ab-overlay";
-    doc.body.appendChild(overlay);
-    hl = doc.createElement("div"); hl.id="ab-hl";
-    doc.body.appendChild(hl);
+    var w = doc.getElementById("ab-welcome-wrap"); if(w) w.remove();
+    if (!overlay) { overlay=doc.createElement("div"); overlay.id="ab-overlay"; doc.body.appendChild(overlay); }
+    if (!hl)      { hl=doc.createElement("div");      hl.id="ab-hl";           doc.body.appendChild(hl); }
+    if (!arrow)   { arrow=doc.createElement("div");   arrow.id="ab-arrow";     doc.body.appendChild(arrow); }
     goStep(0);
   }
 
-  function endTour(completed) {
-    ["ab-overlay","ab-hl","ab-tip"].forEach(function(id){
-      var el=doc.getElementById(id); if(el) el.remove();
-    });
-    overlay=null; hl=null; tip=null;
-    if (completed) { markDone(); showDone(); }
+  function endTour(done) {
+    ["ab-overlay","ab-hl","ab-tip","ab-arrow"].forEach(function(id){ var e=doc.getElementById(id); if(e)e.remove(); });
+    overlay=null; hl=null; tip=null; arrow=null;
+    if (done) { markDone(); showToast(); }
   }
 
-  function showDone() {
-    var t = doc.createElement("div"); t.id="ab-done-toast";
-    t.innerHTML = "<span style='font-size:16px'>✓</span><span>Тур завершён — вы знаете AB·AI</span>" +
-      "<button onclick='this.parentNode.remove()' style='background:#ffffff22;border:none;color:#fff;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;font-family:inherit;margin-left:4px'>×</button>";
+  function showToast() {
+    var t=doc.createElement("div"); t.id="ab-toast";
+    t.innerHTML="<span style='font-size:16px'>✓</span><span>Тур завершён — приступайте!</span>" +
+      "<button onclick='this.parentNode.remove()' style='background:#ffffff22;border:none;color:#fff;" +
+      "border-radius:6px;padding:3px 9px;cursor:pointer;font-size:12px;font-family:inherit;margin-left:4px'>×</button>";
     doc.body.appendChild(t);
-    setTimeout(function(){if(t.parentNode)t.remove();}, 5000);
+    setTimeout(function(){ if(t.parentNode) t.remove(); }, 5000);
   }
 
+  /* ─── WELCOME ─── */
   function showWelcome() {
-    var wrap = doc.createElement("div"); wrap.id="ab-welcome-wrap";
-    wrap.innerHTML =
+    var wrap=doc.createElement("div"); wrap.id="ab-welcome-wrap";
+    wrap.innerHTML=
       "<div id='ab-welcome'>" +
-      "<div style='width:52px;height:52px;background:#0F0F10;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;margin:0 auto 20px'>AB</div>" +
+      "<div style='width:52px;height:52px;background:#0F0F10;border-radius:14px;display:flex;align-items:center;" +
+        "justify-content:center;font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;margin:0 auto 20px'>AB</div>" +
       "<div style='font-size:20px;font-weight:600;color:#0F0F10;letter-spacing:-.02em;margin-bottom:10px'>Добро пожаловать в AB·AI</div>" +
-      "<div style='font-size:14px;color:#4B5563;line-height:1.65;margin-bottom:22px'>Платформа автоматизации A/B-тестирования с ИИ.<br>Хотите пройти быстрый тур по функциям?</div>" +
+      "<div style='font-size:14px;color:#4B5563;line-height:1.65;margin-bottom:22px'>" +
+        "Платформа автоматизации A/B-тестирования с ИИ.<br>Пройдите короткий тур — он займёт меньше минуты.</div>" +
       "<div style='text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:9px'>" +
-      ["LLM-генерация тестируемых гипотез","Авторасчёт выборки и длительности",
-       "Thompson Sampling: адаптивный трафик","Бизнес-отчёт через языковую модель"]
+      ["Генерируй гипотезы — LLM предложит идеи за секунды",
+       "Рассчитай выборку — без формул и таблиц",
+       "Запусти адаптивный трафик с Thompson Sampling",
+       "Получи бизнес-отчёт одним кликом"]
       .map(function(f){
         return "<div style='display:flex;align-items:center;gap:10px;font-size:13px;color:#4B5563'>" +
           "<div style='width:6px;height:6px;border-radius:50%;background:#4F46E5;flex-shrink:0'></div>"+f+"</div>";
       }).join("") +
       "</div>" +
-      "<button class='ab-btn-p' id='ab-start-btn' style='width:100%;padding:12px 20px;font-size:14px;margin-bottom:10px'>Начать тур →</button>" +
-      "<div><button style='background:none;border:none;color:#9CA3AF;font-size:13px;cursor:pointer;font-family:inherit' id='ab-skip-btn'>Пропустить, я разберусь сам</button></div>" +
-      "</div>";
+      "<button class='ab-p' id='ab-go' style='width:100%;padding:12px 20px;font-size:14px;margin-bottom:10px'>Начать тур →</button>" +
+      "<div><button style='background:none;border:none;color:#9CA3AF;font-size:13px;cursor:pointer;font-family:inherit' " +
+        "id='ab-no'>Пропустить, разберусь сам</button></div></div>";
     doc.body.appendChild(wrap);
-    doc.getElementById("ab-start-btn").onclick = function() { wrap.remove(); startTour(); };
-    doc.getElementById("ab-skip-btn").onclick  = function() { wrap.remove(); markDone(); };
+    doc.getElementById("ab-go").onclick = function(){ wrap.remove(); startTour(); };
+    doc.getElementById("ab-no").onclick  = function(){ wrap.remove(); markDone(); };
   }
 
-  // Привязка кнопки «Показать тур снова» из сайдбара
-  function bindRestartBtn() {
+  /* ─── КНОПКА ПЕРЕЗАПУСКА ─── */
+  function bindRestart() {
     var obs = new MutationObserver(function() {
       doc.querySelectorAll("[data-testid='stSidebar'] button").forEach(function(btn) {
-        if (btn.textContent.includes("Показать тур") && !btn._abBound) {
-          btn._abBound = true;
+        if (btn.textContent.trim().includes("Показать тур") && !btn._ab) {
+          btn._ab = true;
           btn.addEventListener("click", function(e) {
             e.stopPropagation();
-            // если тур уже идёт — закрываем
-            ["ab-overlay","ab-hl","ab-tip","ab-welcome-wrap"].forEach(function(id){
+            ["ab-overlay","ab-hl","ab-tip","ab-arrow","ab-welcome-wrap"].forEach(function(id){
               var el=doc.getElementById(id); if(el) el.remove();
             });
-            overlay=null; hl=null; tip=null;
+            overlay=null; hl=null; tip=null; arrow=null;
+            injectStyles();
             startTour();
           });
         }
       });
     });
-    obs.observe(doc.body, { childList: true, subtree: true });
+    obs.observe(doc.body, { childList:true, subtree:true });
   }
 
   injectStyles();
-  bindRestartBtn();
-
-  if (!isDone()) {
-    // небольшая задержка чтобы Streamlit успел отрисовать DOM
-    setTimeout(showWelcome, 900);
-  }
+  bindRestart();
+  if (!isDone()) { setTimeout(showWelcome, 1000); }
 })();
 </script>
 </body>
@@ -739,16 +842,17 @@ with st.sidebar:
     st.markdown("*Автоматизация A/B-тестов*")
     st.divider()
 
+    # label "// навигация" нужен как заголовок группы — скрываем его через CSS
     page = st.radio(
-        "nav",
+        "// навигация",
         options=["Гипотезы", "Планирование", "Симуляция", "Отчёт"],
-        label_visibility="collapsed",
+        label_visibility="visible",
     )
 
     st.divider()
 
     if st.button("◎ Показать тур", key="ab_restart_tour", use_container_width=True):
-        pass  # клик перехватывается JS через MutationObserver
+        pass  # JS перехватывает через MutationObserver
 
     st.markdown(
         "<div style='font-size:11px; color:#9CA3AF; line-height:1.6; margin-top:6px'>"
